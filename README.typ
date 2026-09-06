@@ -10,23 +10,21 @@ git init
 
 維護腳本
 
-proj/Cs.Scripts 是模板附帶的維護腳本項目，與 Spec 中 `*.Scripts/` 的既有模式一致：
+proj/Cs.Scripts 是模板附帶的維護腳本項目：
 
-- dispatcher：`Program.cs` 依首個引數分派到各命令，命令類位於同目錄
-- 上下文：dispatcher 統一建立 `ISCtx`（含 `RootDir`）傳給子命令，子命令不再自行解析路徑
-- 定位：`TestProjects.Find` 以 `proj/*.Test/*.csproj` 模式尋找測試專案，
-  因此 RenameProj 改名後無需改動腳本代碼
+- dispatcher：`Program.cs` 依首個引數分派到各命令
+- 上下文：dispatcher 統一建立 `ISCtx`（`RootDir`、`Tfm`）傳給子命令
+- 命令直接跑 `Cs.Test` 專案，不依賴 RenameProj 改名後的路徑
 
 已內建命令
 
-- `Test`：以 `dotnet run` 直接運行測試專案（非 AOT 的快速驗證）
-- `TestAot`：以 NativeAOT 發布測試專案（Release + 目標 RID）後運行發布物；
-  RID 預設為 win-x64 / linux-x64，可用環境變數 AOT_TEST_RID 覆蓋
+- `Test`：以 `dotnet run` 直接運行 Cs.Test（非 AOT 的快速驗證）
+- `TestAotWin`：以 win-x64 NativeAOT 發布 Cs.Test 後運行發布物
 
 用法（在模板根目錄）：
 ```sh
 dotnet run --project proj/Cs.Scripts/Cs.Scripts.csproj -- Test
-dotnet run --project proj/Cs.Scripts/Cs.Scripts.csproj -- TestAot
+dotnet run --project proj/Cs.Scripts/Cs.Scripts.csproj -- TestAotWin
 ```
 
 在 Scripts 專案內新增命令時：
