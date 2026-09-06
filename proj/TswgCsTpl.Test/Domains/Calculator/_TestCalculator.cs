@@ -3,7 +3,7 @@
 //now we are in Calculator/ , this is only for `TestCalculator`
 using Tsinswreng.CsTreeTest;
 
-namespace Cs.Test.Domains.Calculator;
+namespace TswgCsTpl.Test.Domains.Calculator;
 
 //Use partial class. this is the main part. the file name of main part should start with _
 // each part of the class should only test one method

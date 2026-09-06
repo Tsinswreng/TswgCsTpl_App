@@ -1,4 +1,4 @@
-namespace Cs.Test.Domains.Calculator;
+namespace TswgCsTpl.Test.Domains.Calculator;
 /// example Testee class. this is a sample proj , we put it here for convenience
 /// actually testee class are not in the same csproj as test code
 public interface ICalculator {

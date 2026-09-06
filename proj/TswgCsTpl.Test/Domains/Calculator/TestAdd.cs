@@ -1,6 +1,6 @@
 using Tsinswreng.CsTreeTest;
 
-namespace Cs.Test.Domains.Calculator;
+namespace TswgCsTpl.Test.Domains.Calculator;
 // each part should only mainly test one function. in this part we test Add
 public partial class TestCalculator {
 	public void RegisterAdd(ITestNode Node) {

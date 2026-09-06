@@ -1,9 +1,9 @@
 using Tsinswreng.CsTreeTest;
-using Cs.Test.Domains.Calculator;
-namespace Cs.Test;
+using TswgCsTpl.Test.Domains.Calculator;
+namespace TswgCsTpl.Test;
 
-public class CsTestMgr:DiEtTestMgr{
-	public static CsTestMgr Inst = new();
+public class TswgCsTplTestMgr:DiEtTestMgr{
+	public static TswgCsTplTestMgr Inst = new();
 	public override ITestNode RegisterTestsInto(ITestNode? Node){
 		Node = this.TestNode;
 		this.RegisterTester<TestCalculator>();

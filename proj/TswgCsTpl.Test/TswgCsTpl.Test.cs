@@ -1,8 +1,8 @@
-﻿using Cs.Test.Domains.Calculator;
+using TswgCsTpl.Test.Domains.Calculator;
 using Microsoft.Extensions.DependencyInjection;
 using Tsinswreng.CsTreeTest;
 
-namespace Cs.Test;
+namespace TswgCsTpl.Test;
 
 internal class Program{
 	public static IServiceCollection SvcColct = new ServiceCollection();
@@ -11,7 +11,7 @@ internal class Program{
 		//SvcColct.SetupMyDi();
 		SvcColct.AddSingleton<ICalculator, Calculator>();
 
-		var mgr = CsTestMgr.Inst;
+		var mgr = TswgCsTplTestMgr.Inst;
 		SvcProvdr = mgr.InitSvc(SvcColct, sc => sc.BuildServiceProvider());
 
 		ITestExecutor executor = new TreeTestExecutor();

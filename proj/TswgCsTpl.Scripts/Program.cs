@@ -1,4 +1,4 @@
-namespace Cs.Scripts;
+namespace TswgCsTpl.Scripts;
 
 using System.Runtime.CompilerServices;
 using Tsinswreng.CsSh;
@@ -26,7 +26,7 @@ internal static partial class Program{
 	/// 將命令列入口分派至具名腳本。
 	internal static async Task Main(str[] Args){
 		var Ct = default(CT);
-		// Program.cs 位於 <根>/proj/Cs.Scripts；上推兩級得到倉庫根。
+		// Program.cs 位於 <根>/proj/TswgCsTpl.Scripts；上推兩級得到倉庫根。
 		var Root = FullPath(DirName(OwnPath())/"../..");
 
 		// step 1: 建立統一的子命令上下文，所有子命令都從中取得 RootDir、Tfm。
@@ -50,13 +50,13 @@ internal static partial class Program{
 				await TestAotWin.Main(Ctx, Ct);
 				break;
 			default:
-				throw new ArgumentException($"Unknown Cs script: {Args[0]}.", nameof(Args));
+				throw new ArgumentException($"Unknown TswgCsTpl script: {Args[0]}.", nameof(Args));
 		}
 	}
 
 	/// 列出可由 dotnet run -- <entry> 呼叫的腳本名稱。
 	private static void PrintUsage(){
-		Console.Error.WriteLine("Usage: dotnet run --project proj/Cs.Scripts -- <entry>");
+		Console.Error.WriteLine("Usage: dotnet run --project proj/TswgCsTpl.Scripts -- <entry>");
 		Console.Error.WriteLine("Entries: Test, TestAotWin");
 	}
 

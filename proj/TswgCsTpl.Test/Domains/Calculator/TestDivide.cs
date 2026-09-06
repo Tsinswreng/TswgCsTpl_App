@@ -1,6 +1,6 @@
 using Tsinswreng.CsTreeTest;
 
-namespace Cs.Test.Domains.Calculator;
+namespace TswgCsTpl.Test.Domains.Calculator;
 
 public partial class TestCalculator {
 	public void RegisterTryIntDivide(ITestNode Node) {
