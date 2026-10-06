@@ -85,13 +85,7 @@ public partial interface I_GetBaseUrl {
 ]
 
 
-#H[Avalonia配置][
-```cs
 
-
-```
-
-]
 
 CsErr2
 
