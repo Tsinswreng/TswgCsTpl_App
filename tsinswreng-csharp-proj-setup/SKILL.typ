@@ -68,40 +68,11 @@ public static class DiUi{
 #H[基本存儲區路徑][
 	對于[不運行在瀏覽器環境中]的程序,
 	要爲應用存儲區目錄做抽像:
-```cs
-public interface I_GetBaseDir{
-	
-	/// 安卓應用之pwd皆根目錄。故叵直ᵈ由相對路徑㕥載入配置等。
-	/// 宜皆由此㕥拼接路徑。
-	[Doc(@$"
-	表示應用儲存區的根目錄。
-	適用于 非Browser之客戶端。
-	在Windows上 實現 爲 `Directory.GetCurrentDirectory()`
-	在Android上 實現 爲 
-	`global::Android.App.Application.Context.GetExternalFilesDir(null).AbsolutePath`
-	")]
-	public str GetBaseDir();
-}
+	#link("TswgCsTpl/proj/TswgCsTpl/Infra/I_GetBaseDir.cs")
 
-public static class I_GetBaseDirExtn{
-	public static str Combine(
-		this I_GetBaseDir z
-		,params IList<str> Segs
-	){
-		return Path.Combine([z.GetBaseDir(), ..Segs]);
-	}
-}
+實現參考:
+#link("TswgCsTpl/proj/TswgCsTpl/Infra/CwdBaseDirMgr.cs")
 
-
-public class CwdBaseDirMgr:I_GetBaseDir{
-	public static CwdBaseDirMgr Inst =>field??= new CwdBaseDirMgr();
-	public str _BaseDir{get;set;} = Directory.GetCurrentDirectory();
-	public str GetBaseDir(){
-		return _BaseDir;
-	}
-}
-
-```
 ]
 
 #H[基 遠端Api Url][
