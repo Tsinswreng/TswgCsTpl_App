@@ -19,8 +19,8 @@ global using str = System.String;
 global using obj = System.Object;
 global using nil = System.Object;
 global using CT = System.Threading.CancellationToken;
-
 #pragma warning disable CS0436
+global using Tsinswreng.CsCore;
 global using static Tsinswreng.CsTypeAlias.Nil;
 namespace Tsinswreng.CsTypeAlias {
 	internal class Nil{
