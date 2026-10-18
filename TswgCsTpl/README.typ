@@ -72,7 +72,7 @@ description: 如何初始化C\#項目。只有用戶要求你閱讀此skill時�
 		
 		例:
 ```cs
-namespace Ngan.Dict.Ui;
+namespace TswgCsTpl.Ui;
 
 public static class DiUi{
 	public static IServiceCollection SetupUi(
@@ -85,7 +85,8 @@ public static class DiUi{
 	}
 }
 ```
-在
+每個需要配DI的程序集都寫。
+如 是`TswgCsTpl.Windows`就定義`DiWindows`
 	]
 ]
 
@@ -105,12 +106,6 @@ public static class DiUi{
 	優先用便攜的擴展方法 在`AppLogExtn`中,
 	不用每次都`.Inst`。
 	
-	確保以下符號不需要額外引用其他命名空間就能直接使用:
-	- `Di`
-	- `AppLog`
-	要麼就置于根命名空間的直接子層(在本項目中即`TswgCsTpl`),
-	要麼就用`global using`實現
-
 ]
 
 #H[基本存儲區路徑][
@@ -202,3 +197,12 @@ App.DiOrMk
 	]
 ]
 
+
+#H[][
+	確保以下符號不需要額外引用其他命名空間就能直接使用:
+	- `Di`
+	- `AppLog`
+	- `Todo`
+	要麼就置于根命名空間的直接子層(在本項目中即`TswgCsTpl`),
+	要麼就用`global using`實現
+]

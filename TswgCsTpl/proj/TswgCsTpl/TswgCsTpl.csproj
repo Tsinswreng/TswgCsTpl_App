@@ -11,6 +11,7 @@
 
 	<ItemGroup>
 		<!-- 本地倉庫的四層上溯：proj/TswgCsTpl → proj → TswgCsTpl(模板根) → TswgCsTpl_App → 工作區根 -->
+		<!-- TODO 放到Directory.Build裏面 -->
 		<ProjectReference Include="../../../../Tsinswreng.CsKeyNode/proj/Tsinswreng.CsKeyNode/Tsinswreng.CsKeyNode.csproj" />
 		<ProjectReference Include="../../../../Tsinswreng.CsErr/proj/Tsinswreng.CsErr/Tsinswreng.CsErr.csproj" />
 		<ProjectReference Include="../../../../Tsinswreng.CsI18n/proj/Tsinswreng.CsI18n/Tsinswreng.CsI18n.csproj" />
