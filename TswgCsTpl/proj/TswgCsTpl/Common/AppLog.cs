@@ -1,4 +1,4 @@
-namespace TswgCsTpl.Infra;
+namespace TswgCsTpl.Common;
 
 using Tsinswreng.CsLog;
 

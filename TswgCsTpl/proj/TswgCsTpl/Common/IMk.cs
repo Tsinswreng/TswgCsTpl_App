@@ -1,4 +1,4 @@
-namespace TswgCsTpl.Infra;
+namespace TswgCsTpl.Common;
 
 public interface IMk<T>
 	where T : class

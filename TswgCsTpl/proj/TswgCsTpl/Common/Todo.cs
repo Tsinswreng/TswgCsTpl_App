@@ -1,4 +1,4 @@
-namespace TswgCsTpl.Infra;
+namespace TswgCsTpl.Common;
 
 public class Todo{
 	public static str I18n(str S){

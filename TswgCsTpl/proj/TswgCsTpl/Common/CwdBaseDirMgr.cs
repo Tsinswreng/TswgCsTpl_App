@@ -1,4 +1,4 @@
-namespace TswgCsTpl.Infra;
+namespace TswgCsTpl.Common;
 
 public class CwdBaseDirMgr:I_GetBaseDir{
 	public static CwdBaseDirMgr Inst =>field??= new CwdBaseDirMgr();
