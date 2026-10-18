@@ -16,8 +16,37 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="Tsinswreng.CsLog" Version="0.0.1-alpha" />
+	</ItemGroup>
+
+	<!-- ── 本地基礎庫 ──
+		 這些是所有業務／服務端專案共用的地基，故一律寫在這裡而不是各 csproj：
+		 換版本、加庫都只改一處，不會出現「某個專案還引用舊路徑」這種漂移。
+
+		 *為何走本地專案引用而不是 NuGet*：這些庫在工作區裡還在演進，NuGet 上的 alpha 版
+		 與本地 API 已經對不上（例如 CsSql 的拼接器只存在於本地版本）。
+
+		 路徑以 $(MSBuildThisFileDirectory) 為基準（= proj\），再上溯三層到工作區根，
+		 故不受各專案自身目錄深度的影響。
+
+		 前端專案（Frontend\ 下）有自己的一份 Directory.Build.props，不會繼承本檔；
+		 它們經由「Ui 引用業務項目」的 ProjectReference 轉傳取得這些依賴，故不必重複宣告。 -->
+	<ItemGroup>
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsKeyNode/proj/Tsinswreng.CsKeyNode/Tsinswreng.CsKeyNode.csproj" />
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsErr/proj/Tsinswreng.CsErr/Tsinswreng.CsErr.csproj" />
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsI18n/proj/Tsinswreng.CsI18n/Tsinswreng.CsI18n.csproj" />
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsU128Id/proj/Tsinswreng.CsU128Id/Tsinswreng.CsU128Id.csproj" />
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsRefl/proj/Tsinswreng.CsRefl/Tsinswreng.CsRefl.csproj" />
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsSql/proj/Tsinswreng.CsSql/Tsinswreng.CsSql.csproj" />
+	</ItemGroup>
+
+	<!-- ── 強類型 Id ──
+		 StronglyTypedId 源生成器 ＋ 自訂模板（UInt128 為底、對外 Low64Base）。
+		 模板放在 proj\ 根，故任何專案宣告 [StronglyTypedId] 都能用到同一個模板。 -->
+	<ItemGroup>
+		<PackageReference Include="StronglyTypedId" Version="1.0.0-beta08" />
+		<AdditionalFiles Include="$(MSBuildThisFileDirectory)UInt128Template.typedid" />
 	</ItemGroup>
 </Project>

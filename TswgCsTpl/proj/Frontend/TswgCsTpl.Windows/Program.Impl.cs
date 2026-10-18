@@ -39,26 +39,14 @@ public static partial class Program{
 	}
 
 	private static partial IServiceProvider MkServices(){
-		var Svc = new ServiceCollection();
+				var Svc = new ServiceCollection();
 
-		// step 1: 應用儲存區根目錄。桌面取可執行檔所在目錄，
-		//         日誌等一切執行期寫入都以它為根（理由見 AppDirBaseDirMgr 的說明）。
-		Svc.AddSingleton<I_GetBaseDir>(AppDirBaseDirMgr.Inst);
-
-		// step 2: 日誌。桌面視窗沒有附著終端，故內層實現寫檔；
-		//         注入 ILogger、注入泛型 ILogger、直接調 AppLog 三者共用這一條出口。
-		Svc.AddAppLog(new WindowsFileLogger());
-
-		// step 3: UI 層的共用服務（HTTP 客戶端、會話、各 ViewModel）。
-		Svc.SetupUi();
-
-		// step 4: 本平臺的服務實現（例如文件系統、剪貼板…）日後加在這裡。
-		//         Ui 層只認介面，故換實現時不必動視圖。
-
-		// step 5: （已由上面的 SetupUi 完成）共同 UI 層的 ViewModel
-		//         四個入口層各呼叫一次。
+		// 本平臺的全部註冊都集中在 DiWindows（依賴注入裝配的約定：一處裝配、入口只呼叫）。
+		Svc.SetupWindows();
 
 		return Svc.BuildServiceProvider();
 	}
 }
+
+
 

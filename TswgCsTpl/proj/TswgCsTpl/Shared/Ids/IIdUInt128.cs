@@ -113,6 +113,7 @@ public static class ExtnIIdUInt128 {
 
 [Doc("強類型 Id 使用的源生成模板名常量。寫成常量是為了讓 `[StronglyTypedId(...)]` 不硬編碼字符串。")]
 public static class ConstStrongTypeIdTemplate {
-	[Doc("對應專案根目錄的 `UInt128Template.typedid`。")]
+	[Doc("對應 `proj/` 根目錄的 `UInt128Template.typedid`（由 `proj/Directory.Build.props` 以 `AdditionalFiles` 提供給所有專案）。")]
 	public const str UInt128 = nameof(UInt128) + "Template";
 }
+

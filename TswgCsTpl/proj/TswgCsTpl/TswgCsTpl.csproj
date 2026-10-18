@@ -3,36 +3,17 @@
 	<!-- 業務／共享程序集：跨端契約（DTO、服務接口）、強類型 Id、I18n 與異常鍵都在這裡。
 		 服務端與 Ui 都引用本專案；本專案自身不依賴任何數據庫或 UI 框架。
 
-		 CsSql／CsKeyNode／CsErr／CsI18n 一律走**本地專案引用**（不用 NuGet 版本），
-		 理由：這幾個庫在本地倉庫裡還在演進，NuGet 上的 alpha 版與本地 API 已對不上。 -->
+		 *共用基礎依賴不放這裡*：本地基礎庫（CsKeyNode／CsErr／CsI18n／CsU128Id／CsRefl／CsSql）
+		 與強類型 Id 的源生成器／模板，一律寫在 ../Directory.Build.props——
+		 那是所有專案共用的地基，寫在各 csproj 會漂移。本檔只留「只有這個專案才有」的東西。 -->
 	<PropertyGroup>
 		<RootNamespace>TswgCsTpl</RootNamespace>
 	</PropertyGroup>
 
-	<ItemGroup>
-		<!-- 本地倉庫的四層上溯：proj/TswgCsTpl → proj → TswgCsTpl(模板根) → TswgCsTpl_App → 工作區根 -->
-		<!-- TODO 放到Directory.Build裏面 -->
-		<ProjectReference Include="../../../../Tsinswreng.CsKeyNode/proj/Tsinswreng.CsKeyNode/Tsinswreng.CsKeyNode.csproj" />
-		<ProjectReference Include="../../../../Tsinswreng.CsErr/proj/Tsinswreng.CsErr/Tsinswreng.CsErr.csproj" />
-		<ProjectReference Include="../../../../Tsinswreng.CsI18n/proj/Tsinswreng.CsI18n/Tsinswreng.CsI18n.csproj" />
-		<ProjectReference Include="../../../../Tsinswreng.CsU128Id/proj/Tsinswreng.CsU128Id/Tsinswreng.CsU128Id.csproj" />
-		<!-- CsRefl：建表時列舉實體成員的型別元資料門面（AOT 安全）。 -->
-		<ProjectReference Include="../../../../Tsinswreng.CsRefl/proj/Tsinswreng.CsRefl/Tsinswreng.CsRefl.csproj" />
-		<!-- CsSql 只為建表／倉儲所需的型別（服務端才真正連庫）；共享層不碰具體數據庫實現。 -->
-		<ProjectReference Include="../../../../Tsinswreng.CsSql/proj/Tsinswreng.CsSql/Tsinswreng.CsSql.csproj" />
-	</ItemGroup>
-
-	<!-- 強類型 Id（StronglyTypedId 源生成器）。
-		 UInt128Template.typedid 是自訂模板：產生「UInt128 為底、ToString 走 Low64Base」的結構。 -->
-	<ItemGroup>
-		<PackageReference Include="StronglyTypedId" Version="1.0.0-beta08" />
-		<AdditionalFiles Include="UInt128Template.typedid" />
-	</ItemGroup>
-
-	<!-- 語言資源：內嵌進程序集，四端（含 Android／WASM）都用同一份載入邏輯，不必各端複製檔案。 -->
+	<!-- 語言資源：內嵌進程序集，四端（含 Android／WASM）都用同一份載入邏輯，不必各端複製檔案。
+		 I18nDict 從「自己所在程序集」找資源，故只有本專案需要內嵌。 -->
 	<ItemGroup>
 		<EmbeddedResource Include="Infra/I18n/Languages/*.json" />
 	</ItemGroup>
 
 </Project>
-

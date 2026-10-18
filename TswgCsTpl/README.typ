@@ -87,6 +87,16 @@ public static class DiUi{
 ```
 每個需要配DI的程序集都寫。
 如 是`TswgCsTpl.Windows`就定義`DiWindows`
+
+		本模板的對應:
+		+ `TswgCsTpl`（共享層）→ `DiCore.SetupCore`（I18n 門面、型別元資料）
+		+ `TswgCsTpl.Server` → `DiServer.SetupServer`（ORM、倉儲、用戶領域服務）
+		+ `TswgCsTpl.Ui` → `DiUi.SetupUi`（內部先呼叫 `SetupCore`）
+		+ 四個宿主 → `DiWindows`／`DiLinux`／`DiAndroid`／`DiBrowser`，各自 `SetupXxx`；
+		入口的 `MkServices` 只剩「`new ServiceCollection()` ＋ `Svc.SetupXxx()` ＋ `BuildServiceProvider()`」
+
+		寫法就是傳統的 `this IServiceCollection z` 擴展方法, 不是 `extension(...)` 塊;
+		回傳同一個集合以便串接。
 	]
 ]
 
@@ -105,7 +115,18 @@ public static class DiUi{
 	不方便依賴注入時就直接調用全局可用的`AppLog.Inst`。
 	優先用便攜的擴展方法 在`AppLogExtn`中,
 	不用每次都`.Inst`。
-	
+
+	各宿主的內層實現:
+	+ Windows: `MkrLogger.ConsoleEtFile`
+	（主控台 ＋ 檔案雙寫。桌面是 WinExe, 雙擊啟動時沒有終端,
+	故從終端跑能當場看到、雙擊啟動則留下 `logs/<應用名>.log` 事後查。
+	參照 `Ngan.Dict` 的 Console ＋ File 雙 sink; 本模板不引入 Serilog,
+	用 `AddConsole()` ＋ 自製 `FileLoggerProvider` 達到同樣效果）
+	+ Android: `AndroidLogger`（logcat, 固定 tag 便於單獨過濾）
+	+ Linux／Browser: `MkrLogger.Console`（標準輸出; WASM 下 stdout 被導向開發者工具）
+
+	共用基礎依賴（CsSql／CsKeyNode／CsErr／CsI18n／CsRefl／CsU128Id）與強類型 Id 的
+	源生成器、模板, 一律寫在 `proj/Directory.Build.props`, 各 csproj 不再重複聲明。
 ]
 
 #H[基本存儲區路徑][
@@ -206,3 +227,4 @@ App.DiOrMk
 	要麼就置于根命名空間的直接子層(在本項目中即`TswgCsTpl`),
 	要麼就用`global using`實現
 ]
+

@@ -17,15 +17,15 @@ public static class IServiceCollectionExtn {
 
 		做完之後三種寫法都落到同一個內層實現：注入日誌介面、注入泛型日誌介面、直接調 {nameof(AppLog)}.Inst。
 
-		#Prm[{{nameof(InnerLogger)}}][本宿主的日誌實現，由各宿主提供：桌面檔案、Android logcat、主控台。]
+		#Prm[{{nameof(InnerLogger)}}][本宿主的日誌實現，由各宿主提供：桌面「主控台＋檔案」、Android logcat、主控台。]
 		#Rtn[同一個 {nameof(IServiceCollection)}，便於串接。]
 		#Eg[
 			```cs
-			// Linux
+			// Linux／Browser
 			Svc.AddAppLog(MkrLogger.Console(App.AppName));
 
-			// Windows
-			Svc.AddAppLog(new WindowsFileLogger());
+			// Windows：主控台 ＋ 檔案雙寫
+			Svc.AddAppLog(MkrLogger.ConsoleEtFile(App.AppName));
 
 			// Android
 			Svc.AddAppLog(new AndroidLogger(App.AppName));

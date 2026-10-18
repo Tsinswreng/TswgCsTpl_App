@@ -18,8 +18,8 @@
 		<!-- 業務／共享契約層：DTO、ISvcUser、強類型 Id、I18n、異常鍵。 -->
 		<ProjectReference Include="../TswgCsTpl/TswgCsTpl.csproj" />
 
-		<!-- ORM：本地引用（不用 NuGet 版本），與共享層同一份 CsSql。 -->
-		<ProjectReference Include="../../../../Tsinswreng.CsSql/proj/Tsinswreng.CsSql/Tsinswreng.CsSql.csproj" />
+		<!-- PostgreSQL 接入：只有服務端需要，故留在本檔。
+			 （CsSql 本體由 ../../Directory.Build.props 提供，這裡不重複宣告。） -->
 		<ProjectReference Include="../../../../Tsinswreng.CsSql/proj/Tsinswreng.CsSql.Postgres/Tsinswreng.CsSql.Postgres.csproj" />
 	</ItemGroup>
 

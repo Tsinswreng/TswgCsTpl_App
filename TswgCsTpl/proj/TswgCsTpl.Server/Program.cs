@@ -47,7 +47,7 @@ public static class Program {
 		// 4: 異常與業務服務。
 		Builder.Services.AddExceptionHandler<GlobalErrHandler>();
 		Builder.Services.AddProblemDetails();
-		Builder.Services.SetupServer(Builder.Configuration);
+		Builder.Services.SetupServer();
 
 		var App = Builder.Build();
 		App.UseExceptionHandler();
@@ -68,4 +68,5 @@ public static class Program {
 		return NIL;
 	}
 }
+
 

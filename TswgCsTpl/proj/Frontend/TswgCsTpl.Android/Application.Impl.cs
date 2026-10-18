@@ -31,26 +31,13 @@ public sealed partial class Application{
 	}
 
 	private partial IServiceProvider MkServices(){
-		var Svc = new ServiceCollection();
+				var Svc = new ServiceCollection();
 
-		// step 1: 應用儲存區根目錄。Android 取應用的外部私有目錄：
-		//         不需要權限，卸載時由系統一併清理（理由見 ExternalFilesBaseDirMgr 的說明）。
-		Svc.AddSingleton<I_GetBaseDir>(ExternalFilesBaseDirMgr.Inst);
-
-		// step 2: 日誌。Android 的輸出進 logcat，固定 tag 讓 `adb logcat -s` 能單獨過濾；
-		//         注入 ILogger、注入泛型 ILogger、直接調 AppLog 三者共用這一條出口。
-		//         tag 用 TswgCsTpl.Ui.App.AppName 全名寫出：本檔同時 using 了 Android 的命名空間，
-		//         簡單名 `App` 有機會被解析成命名空間而非類型。
-		Svc.AddAppLog(new AndroidLogger(TswgCsTpl.Ui.App.AppName));
-
-		// step 3: UI 層的共用服務（HTTP 客戶端、會話、各 ViewModel）。
-		TswgCsTpl.Ui.DiUi.SetupUi(Svc);
-
-		// step 4: 本平臺的服務實現日後加在這裡（文件系統、剪貼板…）。
-
-		// step 4: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
+		// 本平臺的全部註冊都集中在 DiAndroid。
+		Svc.SetupAndroid();
 
 		return Svc.BuildServiceProvider();
 	}
 }
+
 
