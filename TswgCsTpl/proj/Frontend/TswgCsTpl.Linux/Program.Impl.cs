@@ -5,9 +5,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using TswgCsTpl.Common;
+using TswgCsTpl.Log;
 using TswgCsTpl.Ui;
 
 public static partial class Program{
@@ -37,15 +37,16 @@ public static partial class Program{
 	private static partial IServiceProvider MkServices(){
 		var Svc = new ServiceCollection();
 
-		// step 1: 日誌（與 Windows 頭同一個做法）。
-		AppLog.Inst.InnerLogger = LoggerFactory
-			.Create(B => B.AddConsole())
-			.CreateLogger(nameof(TswgCsTpl));
-		Svc.AddSingleton<ILogger>(AppLog.Inst);
-		Svc.AddLogging(B => B.AddConsole());
+		// step 1: 應用儲存區根目錄。桌面取可執行檔所在目錄（與 Windows 頭同一個實現）。
+		Svc.AddSingleton<I_GetBaseDir>(AppDirBaseDirMgr.Inst);
 
-		// step 2: 本平臺的服務實現日後加在這裡。
-		// step 3: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
+		// step 2: 日誌。Linux 桌面從終端啟動時有 stdout，故用主控台實現；
+		//         注入 ILogger、注入泛型 ILogger、直接調 AppLog 三者共用這一條出口。
+		Svc.AddAppLog(MkrLogger.Console(App.AppName));
+
+		// step 3: 本平臺的服務實現日後加在這裡。
+
+		// step 4: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
 
 		return Svc.BuildServiceProvider();
 	}

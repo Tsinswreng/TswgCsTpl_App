@@ -20,6 +20,10 @@ Windows 上會出現難以定位的 COM 初始化失敗。
 	[Doc(@"組裝依賴注入容器：註冊本平臺的服務實現。
 *必須在建立任何視圖之前*完成並交給業務層的 `Di` 門面，
 否則視圖解析 ViewModel 時會取不到依賴。
+
+除了本平臺的服務實現，這裡也一併決定兩件全應用共用的事：
+應用儲存區根目錄（`AppDirBaseDirMgr`，供寫檔的元件向容器取）與
+日誌出口（`AddAppLog`，內層實現是寫檔的 `WindowsFileLogger`）。
 #Rtn[建好的服務提供源。]
 ")]
 	private static partial IServiceProvider MkServices();

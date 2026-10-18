@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-namespace TswgCsTpl.Common;
+using TswgCsTpl.Common;
+namespace TswgCsTpl;
 [Doc("全局依賴注入管理")]
 public class Di {
 	public static IServiceProvider SvcProvider {

@@ -6,9 +6,9 @@ using Avalonia;
 using Avalonia.Browser;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using TswgCsTpl.Common;
+using TswgCsTpl.Log;
 using TswgCsTpl.Ui;
 
 internal sealed partial class Program{
@@ -31,16 +31,18 @@ internal sealed partial class Program{
 	private static partial IServiceProvider MkServices(){
 		var Svc = new ServiceCollection();
 
-		// step 1: 日誌。瀏覽器的輸出落在開發者工具的 Console，
-		//         故與其他入口層用同一份控制台實現。
-		AppLog.Inst.InnerLogger = LoggerFactory
-			.Create(B => B.AddConsole())
-			.CreateLogger(nameof(TswgCsTpl));
-		Svc.AddSingleton<ILogger>(AppLog.Inst);
-		Svc.AddLogging(B => B.AddConsole());
+		// step 1: 應用儲存區根目錄。Browser 沒有檔案系統，
+		//         故註冊一個明確拒絕的實現，免得日後有人在 WASM 上寫檔卻靜默失敗
+		//         （要真的落地檔案得接 LocalStorage／IndexedDB，那是另一個決定）。
+		Svc.AddSingleton<I_GetBaseDir>(NoBaseDirMgr.Inst);
 
-		// step 2: 本平臺的服務實現日後加在這裡（例如 LocalStorage 版的鍵值存儲）。
-		// step 3: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
+		// step 2: 日誌。瀏覽器沒有終端，但 WASM 的 stdout 被導向開發者工具的 Console，
+		//         故與 Linux 用同一份主控台實現。
+		Svc.AddAppLog(MkrLogger.Console(App.AppName));
+
+		// step 3: 本平臺的服務實現日後加在這裡（例如 LocalStorage 版的鍵值存儲）。
+
+		// step 4: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
 
 		return Svc.BuildServiceProvider();
 	}

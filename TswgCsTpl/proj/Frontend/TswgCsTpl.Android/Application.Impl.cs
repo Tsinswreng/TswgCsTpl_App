@@ -5,14 +5,17 @@ using Avalonia;
 using Avalonia.Android;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using TswgCsTpl.Common;
+using TswgCsTpl.Log;
 
 public sealed partial class Application{
 
 	public partial Application(nint JavaReference, JniHandleOwnership Transfer)
 		: base(JavaReference, Transfer){
+		// 本類自己就是 Android 的 Context，故直接把它交給儲存區實現；
+		// 這一步必須早於任何可能需要寫檔的元件（日誌、配置）被建立。
+		ExternalFilesBaseDirMgr.Inst._Ctx = this;
 	}
 
 	protected override partial AppBuilder CustomizeAppBuilder(AppBuilder Builder){
@@ -30,16 +33,19 @@ public sealed partial class Application{
 	private partial IServiceProvider MkServices(){
 		var Svc = new ServiceCollection();
 
-		// step 1: 日誌。Android 上真正的日誌實現（Logcat）日後由本層提供，
-		//         現在先用控制台版本，讓四個入口層的行為保持一致。
-		AppLog.Inst.InnerLogger = LoggerFactory
-			.Create(B => B.AddConsole())
-			.CreateLogger(nameof(TswgCsTpl));
-		Svc.AddSingleton<ILogger>(AppLog.Inst);
-		Svc.AddLogging(B => B.AddConsole());
+		// step 1: 應用儲存區根目錄。Android 取應用的外部私有目錄：
+		//         不需要權限，卸載時由系統一併清理（理由見 ExternalFilesBaseDirMgr 的說明）。
+		Svc.AddSingleton<I_GetBaseDir>(ExternalFilesBaseDirMgr.Inst);
 
-		// step 2: 本平臺的服務實現日後加在這裡（文件系統、剪貼板…）。
-		// step 3: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
+		// step 2: 日誌。Android 的輸出進 logcat，固定 tag 讓 `adb logcat -s` 能單獨過濾；
+		//         注入 ILogger、注入泛型 ILogger、直接調 AppLog 三者共用這一條出口。
+		//         tag 用 TswgCsTpl.Ui.App.AppName 全名寫出：本檔同時 using 了 Android 的命名空間，
+		//         簡單名 `App` 有機會被解析成命名空間而非類型。
+		Svc.AddAppLog(new AndroidLogger(TswgCsTpl.Ui.App.AppName));
+
+		// step 3: 本平臺的服務實現日後加在這裡（文件系統、剪貼板…）。
+
+		// step 4: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
 
 		return Svc.BuildServiceProvider();
 	}

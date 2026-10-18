@@ -5,9 +5,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 using TswgCsTpl.Common;
+using TswgCsTpl.Log;
 using TswgCsTpl.Ui;
 
 public static partial class Program{
@@ -41,18 +41,18 @@ public static partial class Program{
 	private static partial IServiceProvider MkServices(){
 		var Svc = new ServiceCollection();
 
-		// step 1: 日誌。全局門面 AppLog 與容器裡的 ILogger 指向同一份實現，
-		//         這樣「有注入」與「沒注入」兩種寫法看到的是同一串日誌。
-		AppLog.Inst.InnerLogger = LoggerFactory
-			.Create(B => B.AddConsole())
-			.CreateLogger(nameof(TswgCsTpl));
-		Svc.AddSingleton<ILogger>(AppLog.Inst);
-		Svc.AddLogging(B => B.AddConsole());
+		// step 1: 應用儲存區根目錄。桌面取可執行檔所在目錄，
+		//         日誌等一切執行期寫入都以它為根（理由見 AppDirBaseDirMgr 的說明）。
+		Svc.AddSingleton<I_GetBaseDir>(AppDirBaseDirMgr.Inst);
 
-		// step 2: 本平臺的服務實現（例如文件系統、剪貼板…）日後加在這裡。
+		// step 2: 日誌。桌面視窗沒有附著終端，故內層實現寫檔；
+		//         注入 ILogger、注入泛型 ILogger、直接調 AppLog 三者共用這一條出口。
+		Svc.AddAppLog(new WindowsFileLogger());
+
+		// step 3: 本平臺的服務實現（例如文件系統、剪貼板…）日後加在這裡。
 		//         Ui 層只認介面，故換實現時不必動視圖。
 
-		// step 3: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊，
+		// step 4: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊，
 		//         四個入口層各呼叫一次。
 
 		return Svc.BuildServiceProvider();

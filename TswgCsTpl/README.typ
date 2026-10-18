@@ -90,28 +90,64 @@ public static class DiUi{
 ]
 
 #H[日誌][
-	應在每個項目中定義一個`AppLog`作爲日誌門面
-	```cs
-	public class AppLog:DelegatingLogger {
-		public static AppLog Inst => field??=new AppLog();
-	}
-	```
-	其中`DelegatingLogger`是`ILogger`子類型,
-	來自`Tsinswreng.CsLog`
-	在程序入口處爲`AppLog.Inst`初始化。
-	然後`AddSingleton<ILogger>(AppLog.Inst)`,
-	方便依賴注入時就注入ILogger,
-	不方便依賴注入時就直接調用全局可用的`AppLog.Inst`
+	全項目只有一個日誌門面 `AppLog`（命名空間 `TswgCsTpl.Log`）。
+	它自己不產生任何輸出,
+	只把呼叫轉發給各宿主挑選的內層實現。
+	故換輸出目標時只改入口的一行,
+	其餘程式碼不動。
+	參照 `Ngan.Ime` 的形狀,
+	但多了「泛型日誌也走同一條出口」與「四份入口重複碼收斂」兩件事。
+
+	#H[組成][
+		+ `Log/AppLog.cs`: 門面本體, 繼承 `DelegatingLogger`（來自 `Tsinswreng.CsLog`）
+		+ `Log/ExtnAppLog.cs`: `AppLog.Info/Warn/Error/Debug/Trace` 便捷寫法
+		+ `Log/IServiceCollectionExtn.cs`: `AddAppLog` 把門面接到容器
+		+ `Log/AppLogLoggerProvider.cs`: 讓泛型日誌介面也走門面, 並把分類名綴在訊息前
+		+ `Log/MkrLogger.cs`: 主控台類宿主的內層實現
+	]
+
+	#H[三種寫法共用一條出口][
+		+ 直接調門面: `AppLog.Info("配置載入完成")`。
+		+ 注入 `ILogger`: 拿到的是 `AppLog.Inst` 本身。
+		+ 注入泛型日誌介面: 由 `AppLogLoggerProvider` 轉發到同一個門面, 故日誌行帶分類前綴。
+
+		*不要*在入口另外寫 `AddLogging(B => B.AddConsole())`。
+		那會造出第二條出口,
+		注入的日誌與直接調門面的日誌分岔到兩處, 排錯時看到的是殘缺的兩半。
+	]
+
+	#H[各宿主的內層實現][
+		+ Windows: `WindowsFileLogger`
+		（寫檔; 桌面是 WinExe, 雙擊啟動時沒有終端, 主控台輸出會全部消失）
+		+ Android: `AndroidLogger`（logcat, 固定 tag 便於單獨過濾）
+		+ Linux: 主控台（`MkrLogger.Console`）
+		+ Browser: 主控台（WASM 的 stdout 被導向開發者工具 Console）
+	]
+
+	#H[日誌檔位置][
+		Windows 的日誌檔路徑由 `I_GetBaseDir` 決定,
+		落在應用儲存區根目錄下的 `logs/TswgCsTpl.Windows.log`。
+		檔案器本身不拼根目錄也不接參數,
+		而是向 `Di` 取 `I_GetBaseDir`,
+		故換儲存區實現時日誌自動跟著走。
+	]
 ]
 
 #H[基本存儲區路徑][
 	對于[不運行在瀏覽器環境中]的程序,
-	要爲應用存儲區目錄做抽像:
-	#link("TswgCsTpl/proj/TswgCsTpl/Infra/I_GetBaseDir.cs")
+	要爲應用儲存區目錄做抽像:
+	#link("TswgCsTpl/proj/TswgCsTpl/Common/I_GetBaseDir.cs")
 
-實現參考:
-#link("TswgCsTpl/proj/TswgCsTpl/Infra/CwdBaseDirMgr.cs")
+	實現參考:
+	+ 桌面（可執行檔所在目錄）:
+	#link("TswgCsTpl/proj/TswgCsTpl/Common/AppDirBaseDirMgr.cs")
+	+ Android（應用的外部私有目錄）:
+	#link("TswgCsTpl/proj/Frontend/TswgCsTpl.Android/ExternalFilesBaseDirMgr.cs")
+	+ Browser（沒有檔案系統, 明確拋出）:
+	#link("TswgCsTpl/proj/TswgCsTpl/Common/NoBaseDirMgr.cs")
 
+	四個入口都要在建立容器時把它註冊進容器,
+	否則 `Di.GetRSvc<I_GetBaseDir>()` 會直接拋。
 ]
 
 #H[基 遠端Api Url][

@@ -31,7 +31,10 @@ public sealed partial class Application : AvaloniaAndroidApplication<TswgCsTpl.U
 
 	[Doc(@"組裝依賴注入容器：註冊本平臺的服務實現。
 是實例方法而非靜態：本類自己就是 Android 的 Context，
-日後要查詢儲存位置時直接用它，不必再去找一個靜態的全域 Context。
+建構子已把它交給儲存區實現，這裡再把儲存區與日誌出口註冊進容器，
+故不需要另外去找一個靜態的全域 Context。
+日誌走 `AddAppLog`：內層實現是 logcat（見 AndroidLogger），
+日後要改成寫檔也只需換這一行傳進去的實現。
 #Rtn[建好的服務提供源。]
 ")]
 	private partial IServiceProvider MkServices();
