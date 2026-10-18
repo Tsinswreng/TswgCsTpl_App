@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- 共同 UI 層：四個入口層（Windows／Linux／Android／Browser）共用同一份界面。
+		 本專案不依賴任何平臺專屬 API，故可在所有平臺原樣複用，也可被單元測試直接引用。
+
+		 共用依賴（Avalonia／聲明式寫法／Avln.Grid／業務程序集）一律在
+		 ../Directory.Build.props 宣告，本檔只寫「只有 UI 層才有」的設定，
+		 故這裡沒有 PackageReference——重複宣告會產生 NU1504 重複參考警告。 -->
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<RootNamespace>TswgCsTpl.Ui</RootNamespace>
+		<!-- 本層要能被 NativeAOT 的桌面頭裁剪：宣告本專案自身 AOT 相容。 -->
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 業務程序集：本層只用到它的 Common 命名空間
+			 （Di／IMk／Todo／AppLog／I_GetBaseDir）。入口層不直接引用它，
+			 理由見 ../Directory.Build.props 的說明。 -->
+		<ProjectReference Include="..\..\TswgCsTpl\TswgCsTpl.csproj" />
+	</ItemGroup>
+
+</Project>

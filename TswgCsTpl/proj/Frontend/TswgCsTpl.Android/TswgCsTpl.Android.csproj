@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- Android 入口層。與兩個桌面入口層的差別有三點：
+		 1. 沒有 Main：Android 的進程入口是系統建立的 Application 與 Activity，
+		    AppBuilder 由 AvaloniaAndroidApplication<App> 配置（Avalonia 12 的作法），
+		    Activity 只負責窗口生命週期；
+		 2. 生命週期是單視圖（ISingleViewApplicationLifetime），
+		    根控件由 App.OnFrameworkInitializationCompleted 掛載，與桌面共用同一份 App；
+		 3. 不支援 NativeAOT（見下面的 PublishAot 說明）。 -->
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0-android</TargetFramework>
+		<RootNamespace>TswgCsTpl.Android</RootNamespace>
+		<!-- 最低支援 API 23（Android 6.0）。目標 API 不在此指定，
+			 由工作負載的預設值決定；清單裡硬寫 targetSdkVersion 會與編譯用的 SDK 版本打架。 -->
+		<SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+		<ApplicationId>com.tsinswreng.TswgCsTpl</ApplicationId>
+		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationDisplayVersion>0.0.1</ApplicationDisplayVersion>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+		<AcceptAndroidSDKLicenses>true</AcceptAndroidSDKLicenses>
+
+		<!-- 日常建置與偵錯用 Mono 執行時：啟動快、可熱重載。
+			 共用 props 對所有前端專案關掉了 PublishAot（Android 不支援它，
+			 開著會讓還原去找桌面版 ILCompiler 套件），此處再明確寫一次 false。 -->
+		<UseMonoRuntime>true</UseMonoRuntime>
+		<AndroidEnableAot>false</AndroidEnableAot>
+		<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+		<PublishAot>false</PublishAot>
+		<PublishTrimmed Condition="'$(Configuration)' == 'Debug'">false</PublishTrimmed>
+		<PublishTrimmed Condition="'$(Configuration)' != 'Debug'">true</PublishTrimmed>
+		<TrimMode>link</TrimMode>
+		<AndroidLinkMode Condition="'$(Configuration)' == 'Debug'">None</AndroidLinkMode>
+		<AndroidLinkMode Condition="'$(Configuration)' != 'Debug'">Full</AndroidLinkMode>
+		<!-- 缺少裁剪標註資料時只警告、不中斷建置。 -->
+		<AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Android" Version="12.1.4" />
+		<!-- 啟動畫面（Android 12+ 的 SplashScreen API）。 -->
+		<PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.15" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- 應用圖示：專案根目錄的 Icon.png 連結到 drawable 資源，
+			 清單與 Activity 都以 @drawable/icon 引用它（Android 資源檔名一律小寫）。 -->
+		<AndroidResource Include="Icon.png">
+			<Link>Resources\drawable\icon.png</Link>
+		</AndroidResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TswgCsTpl.Ui\TswgCsTpl.Ui.csproj" />
+	</ItemGroup>
+
+</Project>

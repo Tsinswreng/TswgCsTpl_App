@@ -1,0 +1,69 @@
+<Project>
+
+	<!-- 前端（Avalonia）共通設定。此檔位於 Frontend/ 之下，是 MSBuild 對本目錄下所有專案
+		 找到的「最近一份」Directory.Build.props，因此上層 proj/Directory.Build.props
+		 對前端專案不會生效——凡是前端也需要、但上層原本提供的東西（型別別名、CsCore 等）
+		 都必須在本檔重新宣告一次。
+
+		 放這裡的理由：五個前端程序集（Ui／Windows／Linux／Android／Browser）
+		 的 Avalonia 版本與共用依賴必須完全一致，一處改動全體生效。 -->
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+
+		<!-- Avalonia 的遙測目標（AvaloniaStats）會寫 %LOCALAPPDATA%\AvaloniaUI\BuildServices\buildtasks.log；
+			 該路徑不可寫時建置會在編譯之前就以 MSB4018 失敗，錯誤訊息看起來與程式碼無關。
+			 清空本屬性即可讓該目標不執行（此屬性只被該目標使用）。 -->
+		<UsedAvaloniaProducts></UsedAvaloniaProducts>
+
+		<!-- 全域不開 PublishAot：上層 props 對後端專案開了它，但前端只有桌面兩個頭要 NativeAOT，
+			 Android 與 Browser 不支援該屬性（開著會讓還原去找桌面版 ILCompiler 套件）。
+			 需要的頭各自在自己的 csproj 打開。 -->
+		<PublishAot>false</PublishAot>
+	</PropertyGroup>
+
+	<!-- 型別別名與全域 using：前端專案取不到上層 proj/TypeAlias.cs，故在此各自編入一份。 -->
+	<ItemGroup>
+		<Compile Include="$(MSBuildThisFileDirectory)TypeAlias.cs" />
+		<Compile Include="$(MSBuildThisFileDirectory)GlobalUsing.cs" />
+	</ItemGroup>
+
+	<!-- 前端的共用依賴。版本一律寫在這裡，前端各專案不得自行寫死版本號。 -->
+	<ItemGroup>
+		<!-- [Doc] 註解屬性（Tsinswreng.CsCore）。 -->
+		<PackageReference Include="Tsinswreng.CsCore" Version="0.0.1-alpha" />
+
+		<!-- Avalonia 本體與聲明式寫法。
+			 Markup.Declarative 自帶的源生成器是以 Roslyn 5.3 構建的，本機 SDK 10.0.101
+			 的編譯器是 5.0，會被以 CS9057 拒用、整套鏈式擴展方法（Text／Content／OnClick…）
+			 全部不存在；MarkupDeclarative.Roslyn4 是同一生成器的 Roslyn 4.x 重建版，
+			 它的 buildTransitive target 會按檔名把 5.3 那個移出分析器集合，只跑 4.x 版。
+			 兩個套件必須成對出現，缺一不可。 -->
+		<PackageReference Include="Avalonia" Version="12.1.4" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
+		<PackageReference Include="Avalonia.Markup.Declarative" Version="12.1.1" />
+		<PackageReference Include="MarkupDeclarative.Roslyn4" Version="12.1.0" PrivateAssets="all" />
+
+		<!-- 順序佈局容器（GridStack）。用 NuGet 套件而不是工作區內的專案：
+			 專案引用在同一工作區下會讓 `dotnet restore` 靜默失敗，套件則正常。 -->
+		<PackageReference Include="Tsinswreng.Avln.Grid" Version="0.0.2-alpha" />
+
+		<!-- ObservableObject／SetProperty：Vm 的屬性通知。 -->
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
+	</ItemGroup>
+
+	<!-- 業務程序集不在這裡引用。
+		 它（TswgCsTpl.csproj）是 OutputType=Exe 的可執行專案，
+		 而 Browser 頭是自包含的可執行檔，兩者直接引用會報 NETSDK1150
+		 （自包含的可執行檔不能引用非自包含的可執行檔）。
+		 故只有 Ui 這一層引用它（見 TswgCsTpl.Ui.csproj），各入口層只引用 Ui。 -->
+
+</Project>

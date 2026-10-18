@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+
+	<!-- Browser（WebAssembly）入口層。與其他入口層的差別：
+		 1. SDK 是 Microsoft.NET.Sdk.WebAssembly，TFM 是 net10.0-browser；
+		 2. 沒有視窗也沒有 Activity，宿主是瀏覽器（`StartBrowserAppAsync`）；
+		 3. NativeAOT 不適用（WASM 有自己的 AOT 形態），故沿用共用 props 的 PublishAot=false。 -->
+	<PropertyGroup>
+		<TargetFramework>net10.0-browser</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>TswgCsTpl.Browser</RootNamespace>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<!-- Avalonia 的 SkiaSharp 在 WASM 上會留下未定義符號（由瀏覽器執行期提供），
+			 沒有這個開關時連結階段會直接失敗。 -->
+		<WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
+
+		<!-- 關掉「自包含的可執行檔不得引用非自包含的可執行檔」這條檢查（NETSDK1150）。
+			 被引用的是業務程序集 TswgCsTpl.csproj，它是 OutputType=Exe 的可執行專案，
+			 但這裡只用到它的類別（Di／IMk／Todo…），不會去跑它的 Main；
+			 WASM 也照樣把它編進 bundle。不關掉這條，整個 Browser 頭建不起來。 -->
+		<ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Avalonia.Browser 會帶入 Avalonia／Avalonia.Skia／Avalonia.HarfBuzz 同版依賴，
+			 故不必逐個宣告。 -->
+		<PackageReference Include="Avalonia.Browser" Version="12.1.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TswgCsTpl.Ui\TswgCsTpl.Ui.csproj" />
+	</ItemGroup>
+
+</Project>

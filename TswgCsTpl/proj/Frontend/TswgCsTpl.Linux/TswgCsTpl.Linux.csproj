@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- Linux 入口層。與 TswgCsTpl.Windows 同構：職責只有「註冊本平臺實現、
+		 建立生命週期、啟動 Avalonia」，界面全部在 TswgCsTpl.Ui。
+
+		 目標框架用可攜的 net10.0 而不是 net10.0-linux：
+		 本專案沒有調用任何 Linux 專屬的原生 API（X11／Wayland 由 Avalonia 自己處理），
+		 用可攜 TFM 才能在同一份程式碼上直出 linux-x64 與 linux-arm64 兩個發佈產物，
+		 也方便在 Windows 上建置與做編譯期檢查。 -->
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<RootNamespace>TswgCsTpl.Linux</RootNamespace>
+
+		<!-- 桌面頭的 NativeAOT（共用 props 預設關閉，這裡明確打開）。 -->
+		<PublishAot>true</PublishAot>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>link</TrimMode>
+		<OptimizationPreference>Size</OptimizationPreference>
+		<InvariantGlobalization>true</InvariantGlobalization>
+
+		<!-- 供程式碼裡 #if LINUX 區分入口層用；與 Windows 頭的 WINDOWS 對稱。 -->
+		<DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Avalonia.Desktop 在 Linux 上提供 X11 後端（Avalonia.X11）與 Skia 渲染。
+			 Wayland 工作階段經 XWayland 運行：Avalonia 12.1.1 沒有獨立的 Wayland 後端套件。
+			 不需另外引入 SkiaSharp.NativeAssets.Linux：Avalonia.Skia 已經依賴它。 -->
+		<PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TswgCsTpl.Ui\TswgCsTpl.Ui.csproj" />
+	</ItemGroup>
+
+</Project>

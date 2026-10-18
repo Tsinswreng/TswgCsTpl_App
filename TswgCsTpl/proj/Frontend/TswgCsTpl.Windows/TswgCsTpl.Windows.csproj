@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- Windows 入口層。入口層的職責只有三件：
+		 1. 註冊本平臺的服務實現；
+		 2. 建立本平臺的應用生命週期（桌面用 ClassicDesktopStyleApplicationLifetime）；
+		 3. 配置並啟動 Avalonia。
+		 界面與 App 全部在 TswgCsTpl.Ui，故本專案幾乎不含邏輯。
+
+		 命名刻意用 TswgCsTpl.Windows 而非 TswgCsTpl.App.Windows：
+		 後者的命名空間會引入上層命名空間 TswgCsTpl.App，
+		 與 TswgCsTpl.Ui.App 這個類名在簡單名稱解析時衝突
+		 （App 會先解析成命名空間），造成難以定位的編譯錯誤。 -->
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<RootNamespace>TswgCsTpl.Windows</RootNamespace>
+
+		<!-- Avalonia 在 Windows 上需要 COM 互操作（拖放、系統對話框等），AOT 發佈時必須開啟。 -->
+		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+
+		<!-- 明確的 app.manifest：缺它時 Windows 會走相容性模式（版本、DPI、UAC 虛擬化），
+			 症狀是「雙擊執行檔後卡住、什麼都沒發生」。 -->
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+
+		<!-- 桌面頭的 NativeAOT（共用 props 預設關閉，這裡明確打開）。 -->
+		<PublishAot>true</PublishAot>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimMode>link</TrimMode>
+		<OptimizationPreference>Size</OptimizationPreference>
+		<InvariantGlobalization>true</InvariantGlobalization>
+
+		<!-- 供程式碼裡 #if WINDOWS 區分入口層用；與 Linux 頭的 LINUX 對稱。 -->
+		<DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 桌面後端（Win32 + Skia）。Avalonia 本體與其他共用依賴在 ../Directory.Build.props。 -->
+		<PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TswgCsTpl.Ui\TswgCsTpl.Ui.csproj" />
+	</ItemGroup>
+
+</Project>

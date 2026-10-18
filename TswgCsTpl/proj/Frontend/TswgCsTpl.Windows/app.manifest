@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <!-- 這份 manifest 只用在 Windows。
+       不要移除它：缺它時視窗透明度與內嵌控件（含 Avalonia 的部分 native host）會出問題，
+       而且系統會以相容性模式啟動，症狀是「雙擊執行檔沒有反應」。
+       詳見 https://learn.microsoft.com/en-us/windows/win32/sbscs/application-manifests -->
+  <assemblyIdentity version="1.0.0.0" name="TswgCsTpl.Windows"/>
+
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- Windows 10／11 -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" />
+    </application>
+  </compatibility>
+</assembly>
