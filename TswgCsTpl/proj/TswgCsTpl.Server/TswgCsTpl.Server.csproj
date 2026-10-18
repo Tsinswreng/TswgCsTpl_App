@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<!-- 服務端：ASP.NET Core 最小 API ＋ PostgreSQL。
+		 用 Web SDK（而不是 Sdk="Microsoft.NET.Sdk" + FrameworkReference）：模板只需要一個服務端專案，
+		 把「領域／數據庫／HTTP 宿主」放同一個程式集，初始化與改名都只有一處。
+		 代價是領域層與 ASP.NET 同程式集；若日後要單獨測試領域層，再拆 TswgCsTpl.Server.Http 不遲。
+
+		 PostgreSQL 驅動版本由 CsSql.Postgres 決定（Npgsql 7.0.4）；此處不重複宣告，免得版本打架。 -->
+	<PropertyGroup>
+		<RootNamespace>TswgCsTpl.Server</RootNamespace>
+		<OutputType>Exe</OutputType>
+		<!-- 服務端不發佈 NativeAOT：ASP.NET 的 AOT 發佈需要額外的 Request Delegate 生成器設定，
+			 而模板這一階段先求「能跑、能讀」。要 AOT 時在此打開並按官方文檔調整。 -->
+		<PublishAot>false</PublishAot>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 業務／共享契約層：DTO、ISvcUser、強類型 Id、I18n、異常鍵。 -->
+		<ProjectReference Include="../TswgCsTpl/TswgCsTpl.csproj" />
+
+		<!-- ORM：本地引用（不用 NuGet 版本），與共享層同一份 CsSql。 -->
+		<ProjectReference Include="../../../../Tsinswreng.CsSql/proj/Tsinswreng.CsSql/Tsinswreng.CsSql.csproj" />
+		<ProjectReference Include="../../../../Tsinswreng.CsSql/proj/Tsinswreng.CsSql.Postgres/Tsinswreng.CsSql.Postgres.csproj" />
+	</ItemGroup>
+
+</Project>

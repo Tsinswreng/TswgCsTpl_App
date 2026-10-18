@@ -1,0 +1,38 @@
+{
+	"Ui": {
+		"AppTitle": "TswgCsTpl",
+		"Login": "Log in",
+		"Register": "Sign up",
+		"Logout": "Log out",
+		"UniqName": "User name",
+		"Email": "Email",
+		"Password": "Password",
+		"ConfirmPassword": "Confirm password",
+		"NickName": "Nickname",
+		"Identity": "User name or email",
+		"LoginSucceeded": "Logged in",
+		"RegisterSucceeded": "Signed up. Please log in.",
+		"LogoutSucceeded": "Logged out",
+		"PasswordMismatch": "The two passwords do not match",
+		"EmailInvalid": "Invalid email address",
+		"CannotBeEmpty": "{0} is required",
+		"Me": "Current user",
+		"NotLogin": "Not logged in",
+		"PleaseRetryLater": "Please try again later"
+	},
+	"Error": {
+		"Common": {
+			"ArgErr": "Invalid argument: {0}",
+			"UnknownErr": "The server could not handle the request. Please try again later.",
+			"NetWorkErr": "Cannot reach the server. Please check your network."
+		},
+		"User": {
+			"UniqNameTaken": "This user name is already taken",
+			"EmailTaken": "This email is already registered",
+			"PasswordNotMatch": "User name or password is incorrect",
+			"NotLogin": "Please log in first",
+			"TokenExpired": "Your session has expired. Please log in again."
+		}
+	}
+}
+

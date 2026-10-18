@@ -1,0 +1,51 @@
+// StronglyTypedId 的模板檔：源生成器把 PLACEHOLDERID 換成 `[StronglyTypedId]` 標註的結構名。
+// 兩條硬約束（踩過就知道）：
+// - 本檔不能寫 using 語句，否則源生成產物會編譯失敗；故一律用全限定名。
+// - 不能改寫成 record struct，只能是 struct。
+//
+// 這個模板的選擇：以 UInt128 為底（用 ULID 填充，天然有序）、對外字符串走 Low64Base
+//（22 字元、URL 安全），數據庫裡以 bytea(16 位元組) 存儲（見 IIdUInt128.MkTypeMapFn）。
+
+partial struct PLACEHOLDERID
+	: global::TswgCsTpl.Shared.Ids.IIdUInt128
+	, global::System.IEquatable<PLACEHOLDERID>
+{
+	/// 無參構造器即「新生成一個 Id」：用 ULID 填充 UInt128。
+	public PLACEHOLDERID():this(0){
+		Value = global::Tsinswreng.CsU128Id.ToolU128Id.NewUlid<
+			global::Tsinswreng.CsU128Id.U128Id
+		>().Value;
+	}
+
+	/// Id 本體。對外只暴露字符串形式，故本成員不參與 JSON 序列化。
+	public global::System.UInt128 Value { get; set; }
+
+	public PLACEHOLDERID(global::System.UInt128 Value) => this.Value = Value;
+
+	public static implicit operator global::System.UInt128(PLACEHOLDERID Id) => Id.Value;
+	public static implicit operator PLACEHOLDERID(global::System.UInt128 Value) => new(Value);
+
+	public override string ToString(){
+		return global::Tsinswreng.CsU128Id.ToolU128Id.ToLow64Base(Value);
+	}
+
+	public static bool operator ==(PLACEHOLDERID Left, PLACEHOLDERID Right){
+		return Left.Value == Right.Value;
+	}
+
+	public static bool operator !=(PLACEHOLDERID Left, PLACEHOLDERID Right){
+		return !(Left == Right);
+	}
+
+	public override bool Equals(object? Obj){
+		return Obj is PLACEHOLDERID Other && Equals(Other);
+	}
+
+	public override int GetHashCode(){
+		return Value.GetHashCode();
+	}
+
+	public bool Equals(PLACEHOLDERID Other){
+		return Value.Equals(Other.Value);
+	}
+}

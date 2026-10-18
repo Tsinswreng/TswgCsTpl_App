@@ -49,12 +49,16 @@ public static partial class Program{
 		//         注入 ILogger、注入泛型 ILogger、直接調 AppLog 三者共用這一條出口。
 		Svc.AddAppLog(new WindowsFileLogger());
 
-		// step 3: 本平臺的服務實現（例如文件系統、剪貼板…）日後加在這裡。
+		// step 3: UI 層的共用服務（HTTP 客戶端、會話、各 ViewModel）。
+		Svc.SetupUi();
+
+		// step 4: 本平臺的服務實現（例如文件系統、剪貼板…）日後加在這裡。
 		//         Ui 層只認介面，故換實現時不必動視圖。
 
-		// step 4: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊，
+		// step 5: （已由上面的 SetupUi 完成）共同 UI 層的 ViewModel
 		//         四個入口層各呼叫一次。
 
 		return Svc.BuildServiceProvider();
 	}
 }
+

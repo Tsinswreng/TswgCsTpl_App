@@ -7,6 +7,7 @@ using Avalonia.Styling;
 
 using TswgCsTpl.Common;
 using TswgCsTpl.Ui.Infra;
+using TswgCsTpl.Ui.Views.User;
 
 public partial class ViewMain{
 
@@ -65,6 +66,9 @@ public partial class ViewMain{
 				.VerticalAlignment(VAlign.Top)
 		);
 
+		Root.Add(new ViewAccount());
+
 		return Root.Grid;
 	}
 }
+

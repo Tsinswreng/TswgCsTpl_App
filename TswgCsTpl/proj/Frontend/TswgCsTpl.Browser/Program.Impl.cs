@@ -40,10 +40,14 @@ internal sealed partial class Program{
 		//         故與 Linux 用同一份主控台實現。
 		Svc.AddAppLog(MkrLogger.Console(App.AppName));
 
-		// step 3: 本平臺的服務實現日後加在這裡（例如 LocalStorage 版的鍵值存儲）。
+		// step 3: UI 層的共用服務（HTTP 客戶端、會話、各 ViewModel）。
+		Svc.SetupUi();
 
-		// step 4: 共同 UI 層的 ViewModel 日後由 Ui 層的 DiUi.SetupUi() 統一註冊。
+		// step 4: 本平臺的服務實現日後加在這裡（例如 LocalStorage 版的鍵值存儲）。
+
+		// step 5: （已由上面的 SetupUi 完成）
 
 		return Svc.BuildServiceProvider();
 	}
 }
+
