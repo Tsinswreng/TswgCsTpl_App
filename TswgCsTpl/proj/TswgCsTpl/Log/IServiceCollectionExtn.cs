@@ -2,6 +2,7 @@ namespace TswgCsTpl.Log;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TswgCsTpl;
 
 [Doc($$"""
 日誌相關的依賴注入裝配。
