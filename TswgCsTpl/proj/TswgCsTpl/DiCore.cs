@@ -37,6 +37,11 @@ public static class DiCore {
 		// 2: 型別元資料（建表、倉儲映射、按名讀寫屬性都靠它）。
 		z.AddSingleton<ITypeInfoSrc>(AppTypeInfoSrc.Inst);
 
+		// 3: 文案覆蓋率自檢：缺譯／重複／未登記的鍵在這裡一次報出來（只記日誌，不中斷啟動）。
+		foreach (var Problem in AppI18n.Verify()) {
+			AppLog.Warn(Problem);
+		}
 		return z;
 	}
 }
+

@@ -9,7 +9,7 @@ using static Tsinswreng.CsErr.ErrNode;
 
 *鍵不是文案*：鍵的用途是「可識別的失敗原因」，它會被：
 1. 序列化成 {{nameof(ITypedErrView)}} 回給客戶端（只傳鍵與參數，不傳文案）；
-2. 由客戶端用自己的語言資源翻譯（見 `AppI18n.ToI18nKey`）。
+2. 由客戶端用自己的譯文翻譯：`I18n.Get(Err.Type, ...)` 會以 `Error/` ＋ 錯誤路徑查文案（見 `I18nKeys`）。
 故鍵的路徑一旦發佈就不該改——改了等於讓舊客戶端翻不出文案。
 
 *命名約定*：成員名結尾的 `__` 是參數佔位符，`ToErr(參數...)` 會按順序填入。
@@ -47,7 +47,6 @@ public static class KeysErr {
 
 		[Doc($$"""
 		身份或密碼不正確。
-
 		*刻意不區分「用戶不存在」與「密碼錯誤」*：分開會讓攻擊者能枚舉出哪些賬號存在。
 		""")]
 		public static K PasswordNotMatch = Mk(_R, [nameof(PasswordNotMatch)]);
@@ -59,5 +58,6 @@ public static class KeysErr {
 		public static K TokenExpired = Mk(_R, [nameof(TokenExpired)]);
 	}
 }
+
 
 

@@ -1,35 +1,27 @@
 namespace TswgCsTpl.Infra.I18n;
 
 using System.Globalization;
-using System.Reflection;
-using System.Text.Json.Nodes;
+using Tsinswreng.CsCfg;
 using Tsinswreng.CsCore;
 using Tsinswreng.CsErr;
-using Tsinswreng.CsCfg;
 using Tsinswreng.CsI18n;
 using Tsinswreng.CsKeyNode;
 
 [Doc($$"""
-以「路徑 → 模板」字典為後端的 {{nameof(II18n)}} 實現。
+以「鍵 → 模板」字典為後端的 {{nameof(II18n)}} 實現。
 
-*為何不用 CsI18n 自帶的 {{nameof(Tsinswreng.CsI18n.I18n)}}*：那個實現要以 `ICfgAccessor`（CsCfg）為資料來源，
-而本專案這一階段不引入 CsCfg。故只沿用 CsI18n 的**接口與鍵模型**（{{nameof(II18n)}}／{{nameof(II18nKey)}}），
-把資料來源換成「內嵌 JSON 攤平成字典」。
+*資料從哪來*：直接吃 C# 的 {nameof(I18nEntry)} 列表（見各 `Msg<語言>` 類），
+不讀檔、不生成 JSON——少了轉義、少了生成步驟、也少了「源與產物漂移」這類問題。
 
-*為何內嵌 JSON*：語言資源要跟著程序集走，四個宿主（含 Android／WASM）都不必各自複製檔案。
-
-*模板格式*：`{0}`、`{1}` 之類的標準複合格式佔位符（與 CsI18n 的 I18n 一致）。
+*模板格式*：`{0}`、`{1}` 的標準複合格式（僅位置參數，見 msg-fmt-key 規範）。
 """)]
 public class I18nDict : II18n {
-	[Doc("全路徑 → 模板。鍵用 {nameof(PathSep)} 連接，例如 `Ui.Login`。")]
+	[Doc("字典鍵 → 模板。鍵的規範化見 {nameof(I18nKeys.Of)}。")]
 	public IDictionary<str, str> Map { get; set; } = new Dictionary<str, str>();
 
-	[Doc("路徑分隔符；必須與 `KeysI18n` 的 Mkr 一致。")]
-	public str PathSep { get; set; } = ".";
-
 	[Doc($$"""
-	鍵找不到時的兜底。默認退回最後一段路徑——這比拋例外好：
-	漏翻一條文案不該讓整個界面崩掉，而顯示鍵名也足以讓人看出「這裡沒翻」。
+	界面文案鍵找不到時的兜底。默認退回路徑末段——漏翻一條文案不該讓界面崩掉，
+	顯示鍵名也足以讓人看出「這裡沒翻」。
 	""")]
 	public OnKeyNotFound? OnKeyNotFound { get; set; } = (Self, Key, Args) => {
 		var Segs = Key.GetFullPathSegs();
@@ -37,28 +29,34 @@ public class I18nDict : II18n {
 	};
 
 	[Doc($$"""
-	取文案並填入參數。
+	按界面文案鍵取文案並填參數。
 	#Prm[{{nameof(Key)}}][文案鍵。]
-	#Prm[{{nameof(Args)}}][填進 `{0}`、`{1}` 佔位符的參數。]
+	#Prm[{{nameof(Args)}}][填進 `{0}`、`{1}` 的參數。]
 	#Rtn[填好的文案；鍵不存在時走 {nameof(OnKeyNotFound)}。]
 	""")]
 	public str Get(II18nKey Key, params obj[] Args) {
-		var Full = Key.GetFullPath(PathSep);
-		if (!Map.TryGetValue(Full, out var Template)) {
-			return OnKeyNotFound?.Invoke(this, Key, Args) ?? "";
+		var K = I18nKeys.Of(Key);
+		if (!Map.TryGetValue(K, out var Template)) {
+			return OnKeyNotFound?.Invoke(this, Key, Args) ?? K;
 		}
-		if (Args.Length == 0) {
-			return Template;
-		}
-		try {
-			return string.Format(CultureInfo.InvariantCulture, Template, Args);
-		} catch (FormatException) {
-			// 模板寫錯時退原文，避免一條文案的錯誤炸掉整頁。
-			return Template;
-		}
+		return Format(Template, Args);
 	}
 
-	[Doc("索引器形式：`I18n[KeysI18n.Ui.Login]`。")]
+	[Doc($$"""
+	按錯誤鍵取文案並填參數。錯誤鍵的字典鍵是 `Error/` ＋ 錯誤路徑（見 {nameof(I18nKeys)}）。
+	#Prm[{{nameof(Key)}}][錯誤鍵。]
+	#Prm[{{nameof(Args)}}][填進模板的參數。]
+	#Rtn[填好的文案；沒有譯文時回鍵路徑本身（方便一眼看出漏翻的是哪條）。]
+	""")]
+	public str Get(IErrNode Key, params obj[] Args) {
+		var K = I18nKeys.Of(Key);
+		if (!Map.TryGetValue(K, out var Template)) {
+			return K;
+		}
+		return Format(Template, Args);
+	}
+
+	[Doc("索引器形式：`I18n[KeysI18n.Login]`。")]
 	public str this[II18nKey Key] {
 		get {
 			return Get(Key);
@@ -66,68 +64,71 @@ public class I18nDict : II18n {
 	}
 
 	[Doc($$"""
-	從程序集內嵌資源載入指定語言。
-	#Prm[{{nameof(Lang)}}][語言代碼，例如 `zh-CN`、`en`；對應 `Languages/<語言>.json`。]
-	#Rtn[載入完成的實例；找不到資源時拋例外（語言檔缺失是部署錯誤，不該靜默）。]
+	填模板參數。模板寫錯（例如佔位符的花括號沒配對）時退回原文，避免一條文案的錯炸掉整頁。
+	#Prm[{{nameof(Template)}}][模板。]
+	#Prm[{{nameof(Args)}}][位置參數。]
 	""")]
-	public static I18nDict FromEmbeddedResource(str Lang) {
-		var Asm = typeof(I18nDict).Assembly;
-		var Suffix = "." + Lang + ".json";
-		// 資源名由根命名空間與目錄拼成，故用「以語言檔名結尾」匹配，避免寫死整段資源名。
-		var ResName = Asm.GetManifestResourceNames()
-			.FirstOrDefault(x => x.EndsWith(Suffix, StringComparison.OrdinalIgnoreCase));
-		if (ResName is null) {
-			throw new FileNotFoundException(
-				$"內嵌語言資源不存在：{Lang}。已內嵌的有：{string.Join(", ", Asm.GetManifestResourceNames())}"
-			);
+	static str Format(str Template, obj[] Args) {
+		if (Args.Length == 0) {
+			return Template;
 		}
-		using var Stream = Asm.GetManifestResourceStream(ResName)!;
-		var R = new I18nDict();
-		R.LoadJson(Stream);
-		return R;
+		try {
+			return string.Format(CultureInfo.InvariantCulture, Template, Args);
+		} catch (FormatException) {
+			return Template;
+		}
 	}
 
 	[Doc($$"""
-	把嵌套 JSON 攤平成「路徑 → 文案」。
-	#Prm[{{nameof(Stream)}}][UTF-8 JSON 流；形狀是嵌套物件。]
+	由譯文條目建字典。同一個鍵出現兩次視為編程錯誤，直接拋——那一定是複製貼上沒刪。
+	#Prm[{{nameof(Entries)}}][某個語言的全部條目。]
+	#Rtn[可用的 {nameof(I18nDict)}。]
+	#Throw[{{nameof(InvalidOperationException)}}][同一鍵重複出現時。]
 	""")]
-	public void LoadJson(Stream Stream) {
-		var Root = JsonNode.Parse(Stream) as JsonObject
-			?? throw new InvalidDataException("語言檔根節點必須是 JSON 物件。");
-		Flatten(Root, [], Map);
-	}
-
-	[Doc("遞歸攤平：物件繼續往下走，字符串值則以當前路徑為鍵收進字典。")]
-	static void Flatten(JsonObject Obj, IList<str> Segs, IDictionary<str, str> Out) {
-		foreach (var Pair in Obj) {
-			var Cur = new List<str>(Segs) { Pair.Key };
-			switch (Pair.Value) {
-				case JsonObject Child:
-					Flatten(Child, Cur, Out);
-					break;
-				case JsonValue Value:
-					// 數值／布爾型的文案沒有意義，只收字符串。
-					if (Value.TryGetValue<str>(out var S)) {
-						Out[str.Join(".", Cur)] = S;
-					}
-					break;
+	public static I18nDict Mk(IEnumerable<I18nEntry> Entries) {
+		var R = new I18nDict();
+		foreach (var Entry in Entries) {
+			if (R.Map.ContainsKey(Entry.Key)) {
+				throw new InvalidOperationException($"譯文鍵重複：{Entry.Key}");
 			}
+			R.Map[Entry.Key] = Entry.Text;
 		}
+		return R;
 	}
 }
 
 [Doc($$"""
-全局 I18n 門面：不方便注入 I18n 的地方（視圖、靜態工具）直接用它。
+全局 I18n 門面：不方便依賴注入的地方（視圖、靜態工具）直接用它。
 
+*語言放哪*：{nameof(Langs)} 把語言代碼映射到譯文條目；加一種語言＝加一個 `Msg<語言>` 類 ＋ 這裡多一行。
 *為何是靜態*：與 `AppLog` 同理——界面首次組裝時就需要文案，那時容器可能還沒交給 `Di`。
-容器裡如需注入，註冊 `II18n` 指向 {nameof(Inst)} 即可。
+容器裡如需注入，註冊 `II18n` 指向 {nameof(Inst)}（見 `DiCore`）。
 """)]
 public static class AppI18n {
-	[Doc("默認語言。真實項目應改由配置或系統語言決定（服務端配置鍵 / 客戶端系統 Locale）。")]
+	[Doc("默認語言。真實項目宜由配置或系統語言決定。")]
 	public const str DfltLang = "zh-CN";
 
-	[Doc("當前語言資源；第一次取用時載入默認語言。")]
-	public static II18n Inst { get; set; } = I18nDict.FromEmbeddedResource(DfltLang);
+	[Doc("語言代碼 → 譯文條目。")]
+	public static IDictionary<str, IList<I18nEntry>> Langs { get; } = new Dictionary<str, IList<I18nEntry>> {
+		["zh-CN"] = MsgZhCn.Entries,
+		["en"] = MsgEn.Entries,
+	};
+
+	[Doc("當前語言；第一次取用時載入默認語言。")]
+	public static II18n Inst { get; set; } = MkDict(DfltLang);
+
+	[Doc($$"""
+	按語言代碼造一份字典。
+	#Prm[{{nameof(Lang)}}][語言代碼，例如 `zh-CN`、`en`。]
+	#Rtn[該語言的 {nameof(I18nDict)}。]
+	#Throw[{{nameof(ArgumentException)}}][沒有這個語言的譯文時。]
+	""")]
+	public static I18nDict MkDict(str Lang) {
+		if (!Langs.TryGetValue(Lang, out var Entries)) {
+			throw new ArgumentException($"未提供語言：{Lang}");
+		}
+		return I18nDict.Mk(Entries);
+	}
 
 	[Doc($$"""
 	切換語言。切換後所有透過 {nameof(Inst)} 取的文案都跟著變（已渲染的界面需自行重繪）。
@@ -135,25 +136,50 @@ public static class AppI18n {
 	#Rtn[新的語言資源，便於鏈式取用。]
 	""")]
 	public static II18n Use(str Lang) {
-		Inst = I18nDict.FromEmbeddedResource(Lang);
+		Inst = MkDict(Lang);
 		return Inst;
 	}
 
-	[Doc("異常鍵的文案根節點。異常鍵 `User/PasswordNotMatch` 對應文案鍵 `Error.User.PasswordNotMatch`。")]
-	public static II18nKey ErrRoot { get; } = I18nKey.Mk(null, ["Error"]);
-
 	[Doc($$"""
-	把異常鍵映射到文案鍵，供界面把 {nameof(TypedErr)} 翻成用戶看得懂的句子。
-	#Eg[
-		```cs
-		catch (TypedErr Err) {
-			Show(AppI18n.Inst.Get(Err.Type.ToI18nKey(), Err.Args?.ToArray() ?? []));
-		}
-		```
-	]
+	覆蓋率自檢：逐語言比對「界面文案鍵全集」與實際提供的條目。
+
+	檢查三件事：同一語言內鍵重複、譯文為空、界面文案缺譯或未登記。
+	錯誤文案不在檢查範圍（那要列舉 `KeysErr` 的全部葉子，體量小、可日後用腳本補）。
+
+	#Rtn[問題列表；空表示沒問題。]
 	""")]
-	public static I18nKey ToI18nKey(this IErrNode ErrNode) {
-		return (I18nKey)I18nKey.Mk(ErrRoot, ErrNode.BuildFullPathSegs());
+	public static IList<str> Verify() {
+		var R = new List<str>();
+		// 1: 界面文案鍵的規範化字符串全集。
+		var UiKeys = new HashSet<str>();
+		foreach (var Key in KeysI18n.All) {
+			UiKeys.Add(I18nKeys.Of(Key));
+		}
+		// 2: 逐語言檢查。
+		foreach (var Pair in Langs) {
+			var Seen = new HashSet<str>();
+			foreach (var Entry in Pair.Value) {
+				if (!Seen.Add(Entry.Key)) {
+					R.Add($"[{Pair.Key}] 鍵重複：{Entry.Key}");
+				}
+				if (string.IsNullOrWhiteSpace(Entry.Text)) {
+					R.Add($"[{Pair.Key}] 譯文為空：{Entry.Key}");
+				}
+			}
+			// 3: 缺譯。
+			foreach (var Key in UiKeys) {
+				if (!Seen.Contains(Key)) {
+					R.Add($"[{Pair.Key}] 缺少界面文案：{Key}");
+				}
+			}
+			// 4: 未登記的鍵（既不是界面文案鍵、也不是錯誤文案）。
+			foreach (var Key in Seen) {
+				if (!UiKeys.Contains(Key) && !Key.StartsWith(I18nKeys.ErrPrefix, StringComparison.Ordinal)) {
+					R.Add($"[{Pair.Key}] 未登記的鍵：{Key}");
+				}
+			}
+		}
+		return R;
 	}
 }
 

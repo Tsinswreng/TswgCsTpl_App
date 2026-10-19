@@ -136,6 +136,18 @@ public static class DiUi{
 	- AppErrTags
 ]
 
+#H[界面文案與譯文][
+	鍵：`Common/I18n/KeysI18n.cs`，*平鋪一層*、不按畫面分組；同一鍵同一譯文（msg-fmt-key 的理念）。
+	譯文：`Common/I18n/MsgZhCn.cs`、`MsgEn.cs`，直接用 C\# 寫，不生成 JSON、不讀檔。
+	+ 每條寫成 `new(KeysI18n.Login, "登錄")`——鍵直接引用業務側的鍵物件，*改名就編譯錯*
+	+ 錯誤文案同理：`new(KeysErr.User.PasswordNotMatch, "登錄名或密碼不正確")`，鍵規範化成 `Error/` ＋ 錯誤路徑
+	+ 模板只用位置參數 `{0}`、`{1}`；C\# 原始字符串可多行、完全不必轉義（JSON 做不到這點）
+	+ 啟動自檢：`DiCore.SetupCore` 會跑 `AppI18n.Verify()` 比對「每個語言的條目」與「`KeysI18n.All` 全集」，
+	缺譯／重複／未登記的鍵只記日誌、不中斷啟動
+	+ 切換語言：`AppI18n.Use("en")`；已渲染的界面需自行重繪
+	+ 鍵那側的參數佔位照 msg-fmt-key 規範：一個 `__` 對應一個位置參數（例：`Select__From__`）
+]
+
 #H[基本存儲區路徑][
 	對于[不運行在瀏覽器環境中]的程序,
 	要爲應用儲存區目錄做抽像:
@@ -189,7 +201,7 @@ App.DiOrMk
 	]
 
 	#H[認證模型][
-		+ 登錄成功簽發**不透明令牌**（隨機 32 位元組），庫裡只存它的 SHA-256
+		+ 登錄成功簽發*不透明令牌*（隨機 32 位元組），庫裡只存它的 SHA-256
 		+ 之後的請求帶 `Authorization: Bearer <令牌>`；中間件解出用戶身份放進 `ICurrentUser`
 		+ 退出登錄＝把會話的 `RevokeAt` 寫成當前時刻；重複退出是冪等的
 		+ 刻意不做 refresh token：過期即重新登錄。要加時擴 `PoSession`（加 RefreshHash／RefreshExpireAt）與一個端點
@@ -218,7 +230,7 @@ App.DiOrMk
 	#H[已做到的驗證][
 		+ 共享層、服務端、Ui 全部、以及 Windows／Linux／Browser 三個宿主，都已用 Roslyn（csc）直接編譯通過；
 		Ui 的聲明式寫法是在 Markup.Declarative 生成器參與下編譯的
-		+ **尚未做**：`dotnet build`（本沙箱裡凡涉及專案引用圖的還原會在 `_GetAllRestoreProjectPathItems` 靜默失敗）、
+		+ *尚未做*：`dotnet build`（本沙箱裡凡涉及專案引用圖的還原會在 `_GetAllRestoreProjectPathItems` 靜默失敗）、
 		Android 宿主編譯、以及起 PostgreSQL 跑一次註冊→登錄→`/me`→退出的實測
 		+ 強類型 Id 的模板（`UInt128Template.typedid`）在 csc 下沒被 `-additionalfile` 餵進去，
 		故 Id 的生成體是用等價 stub 驗的；真正的模板生成要在 `dotnet build` 時確認
@@ -236,5 +248,9 @@ App.DiOrMk
 	要麼就用`global using`實現。
 	目前 `Tsinswreng.CsErr` 走全域 using（`proj/TypeAlias.cs` 與 `Frontend/GlobalUsing.cs`），故拋錯處只寫 `KeysErr.X.ToErr(...)` 即可。
 ]
+
+
+
+
 
 

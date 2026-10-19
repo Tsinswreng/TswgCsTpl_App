@@ -4,84 +4,90 @@ using Tsinswreng.CsCore;
 using Tsinswreng.CsI18n;
 
 [Doc($$"""
-界面文案鍵族（CsI18n 的 {{nameof(I18nKey)}} 路徑）。
+界面文案鍵：**平鋪**一層，不按畫面／模塊分組。
 
-*鍵與文案分離*：鍵只描述「這裡要顯示什麼」，具體文字在 `Languages/<語言>.json`。
-故加一種語言只需加一個 JSON 檔，不必改任何代碼。
+*為何平鋪*：同一個鍵到哪裡都該是同一句譯文（msg-fmt-key 的理念）。
+分組會誘使人為「登錄頁的取消」和「刪除確認的取消」各立一個鍵，最後同一句話翻出多份、改一處漏三處。
+真的需要不同措辭時，正解是加參數或另立一個語義不同的鍵，而不是加前綴。
 
-*路徑風格用 `.`*：語言檔是嵌套 JSON，用 `.` 拼成 `Ui.Login` 這種可讀路徑；
-而異常鍵（見 `KeysErr`）用 `/` —— 兩者是不同的鍵族，刻意分開避免混淆。
+*命名*：識別符即鍵字符串，照 msg-fmt-key 規範——
+顯示名稱的含義與英文譯文一致；`__` 表示參數佔位，一個 `__` 對應一個位置參數。
 
-*為何葉子用 {nameof(I18nKey)} 而不是裸 {nameof(Tsinswreng.CsKeyNode.KeyNode)}*：
-`II18n.Get` 收的是 `II18nKey`；{nameof(I18nKey)} 是 CsI18n 提供的實現，
-它本身仍以 KeyNode 的分段路徑為基礎，故鍵的形狀與配置鍵一族一致。
+*鍵在哪查*：與譯文一起被 `Msg<語言>` 引用，故鍵改名會讓翻譯檔編譯錯。
 """)]
 public static class KeysI18n {
-	[Doc("造一個文案鍵。`Parent` 為 null 表示鍵樹的根。")]
-	static I18nKey Mk(II18nKey? Parent, IList<str> Path) {
-		return (I18nKey)I18nKey.Mk(Parent, Path);
+	[Doc("造一個鍵。目前全部是單段，故父節點傳 null。")]
+	static I18nKey Mk1(str Name) {
+		return (I18nKey)I18nKey.Mk(null, [Name]);
 	}
 
-	[Doc("界面通用文案。")]
-	public static class Ui {
-		[Doc("本組根節點。")]
-		public static I18nKey _R = Mk(null, [nameof(Ui)]);
+	[Doc("應用標題。")]
+	public static I18nKey AppTitle = Mk1(nameof(AppTitle));
 
-		[Doc("應用標題。")]
-		public static I18nKey AppTitle = Mk(_R, [nameof(AppTitle)]);
+	[Doc("「登錄」。")]
+	public static I18nKey Login = Mk1(nameof(Login));
 
-		[Doc("「登錄」：標籤頁標題與按鈕文字。")]
-		public static I18nKey Login = Mk(_R, [nameof(Login)]);
+	[Doc("「註冊」。")]
+	public static I18nKey Register = Mk1(nameof(Register));
 
-		[Doc("「註冊」。")]
-		public static I18nKey Register = Mk(_R, [nameof(Register)]);
+	[Doc("「退出登錄」。")]
+	public static I18nKey Logout = Mk1(nameof(Logout));
 
-		[Doc("「退出登錄」。")]
-		public static I18nKey Logout = Mk(_R, [nameof(Logout)]);
+	[Doc("「登錄名」。")]
+	public static I18nKey UniqName = Mk1(nameof(UniqName));
 
-		[Doc("「登錄名」字段標籤。")]
-		public static I18nKey UniqName = Mk(_R, [nameof(UniqName)]);
+	[Doc("「郵箱」。")]
+	public static I18nKey Email = Mk1(nameof(Email));
 
-		[Doc("「郵箱」字段標籤。")]
-		public static I18nKey Email = Mk(_R, [nameof(Email)]);
+	[Doc("「密碼」。")]
+	public static I18nKey Password = Mk1(nameof(Password));
 
-		[Doc("「密碼」字段標籤。")]
-		public static I18nKey Password = Mk(_R, [nameof(Password)]);
+	[Doc("「確認密碼」。")]
+	public static I18nKey ConfirmPassword = Mk1(nameof(ConfirmPassword));
 
-		[Doc("「確認密碼」字段標籤。")]
-		public static I18nKey ConfirmPassword = Mk(_R, [nameof(ConfirmPassword)]);
+	[Doc("「暱稱」。")]
+	public static I18nKey NickName = Mk1(nameof(NickName));
 
-		[Doc("「暱稱」字段標籤。")]
-		public static I18nKey NickName = Mk(_R, [nameof(NickName)]);
+	[Doc("「登錄名或郵箱」。")]
+	public static I18nKey Identity = Mk1(nameof(Identity));
 
-		[Doc("「身份（登錄名或郵箱）」字段標籤。")]
-		public static I18nKey Identity = Mk(_R, [nameof(Identity)]);
+	[Doc("登錄成功提示。")]
+	public static I18nKey LoginSucceeded = Mk1(nameof(LoginSucceeded));
 
-		[Doc("登錄成功提示。")]
-		public static I18nKey LoginSucceeded = Mk(_R, [nameof(LoginSucceeded)]);
+	[Doc("註冊成功提示。")]
+	public static I18nKey RegisterSucceeded = Mk1(nameof(RegisterSucceeded));
 
-		[Doc("註冊成功提示（提示用戶接著登錄）。")]
-		public static I18nKey RegisterSucceeded = Mk(_R, [nameof(RegisterSucceeded)]);
+	[Doc("退出登錄成功提示。")]
+	public static I18nKey LogoutSucceeded = Mk1(nameof(LogoutSucceeded));
 
-		[Doc("退出登錄成功提示。")]
-		public static I18nKey LogoutSucceeded = Mk(_R, [nameof(LogoutSucceeded)]);
+	[Doc("兩次密碼不一致。")]
+	public static I18nKey PasswordMismatch = Mk1(nameof(PasswordMismatch));
 
-		[Doc("兩次輸入的密碼不一致。")]
-		public static I18nKey PasswordMismatch = Mk(_R, [nameof(PasswordMismatch)]);
+	[Doc("郵箱格式不合法。")]
+	public static I18nKey EmailInvalid = Mk1(nameof(EmailInvalid));
 
-		[Doc("郵箱格式不合法。")]
-		public static I18nKey EmailInvalid = Mk(_R, [nameof(EmailInvalid)]);
+	[Doc("「{0} 不可為空」。")]
+	public static I18nKey CannotBeEmpty = Mk1(nameof(CannotBeEmpty));
 
-		[Doc("「某字段不可為空」。帶一個 `{0}` 佔位符，填字段名。")]
-		public static I18nKey CannotBeEmpty = Mk(_R, [nameof(CannotBeEmpty)]);
+	[Doc("「當前用戶」標題。")]
+	public static I18nKey Me = Mk1(nameof(Me));
 
-		[Doc("「當前用戶」區塊標題。")]
-		public static I18nKey Me = Mk(_R, [nameof(Me)]);
+	[Doc("尚未登錄。")]
+	public static I18nKey NotLogin = Mk1(nameof(NotLogin));
 
-		[Doc("尚未登錄時的提示文字。")]
-		public static I18nKey NotLogin = Mk(_R, [nameof(NotLogin)]);
+	[Doc("「請稍後重試」。")]
+	public static I18nKey PleaseRetryLater = Mk1(nameof(PleaseRetryLater));
 
-		[Doc("提示「請稍後重試」這類不帶細節的錯誤文案。")]
-		public static I18nKey PleaseRetryLater = Mk(_R, [nameof(PleaseRetryLater)]);
-	}
+	[Doc($$"""
+	全部界面文案鍵。
+
+	*為何要這份清單*：NativeAOT 下不能靠反射列舉靜態欄位，
+	而運行時的覆蓋率檢查（每個語言是否都翻了每個鍵）需要知道全集。
+	新增鍵時記得同步加進來——漏了不會編譯錯，但檢查會報「翻譯檔裡有未知鍵」。
+	""")]
+	public static IList<II18nKey> All { get; } = [
+		AppTitle, Login, Register, Logout, UniqName, Email, Password, ConfirmPassword,
+		NickName, Identity, LoginSucceeded, RegisterSucceeded, LogoutSucceeded,
+		PasswordMismatch, EmailInvalid, CannotBeEmpty, Me, NotLogin, PleaseRetryLater,
+	];
 }

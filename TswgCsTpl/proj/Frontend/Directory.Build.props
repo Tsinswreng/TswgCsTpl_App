@@ -47,9 +47,11 @@
 		<PackageReference Include="Avalonia.Markup.Declarative" Version="12.1.1" />
 		<PackageReference Include="MarkupDeclarative.Roslyn4" Version="12.1.0" PrivateAssets="all" />
 
-		<!-- 順序佈局容器（GridStack）。用 NuGet 套件而不是工作區內的專案：
-			 專案引用在同一工作區下會讓 `dotnet restore` 靜默失敗，套件則正常。 -->
-		<PackageReference Include="Tsinswreng.Avln.Grid" Version="0.0.2-alpha" />
+		<!-- 順序佈局容器（StackGrid）：走**本地專案引用**。
+			 理由：NuGet 上最新的 0.0.2-alpha 只有舊的 `GridStack`，
+			 現行規範要用的 `StackGrid`（Grid 的自動落號子類）只存在於本地倉庫源碼裡。
+			 發佈新套件後可換回 PackageReference。 -->
+		<ProjectReference Include="../../../../Tsinswreng.Avln.Grid/proj/Tsinswreng.Avln.Grid/Tsinswreng.Avln.Grid.csproj" />
 
 		<!-- ObservableObject／SetProperty：Vm 的屬性通知。 -->
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
@@ -67,3 +69,4 @@
 		 故只有 Ui 這一層引用它（見 TswgCsTpl.Ui.csproj），各入口層只引用 Ui。 -->
 
 </Project>
+

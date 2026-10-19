@@ -7,7 +7,7 @@ using Avalonia.Styling;
 
 using TswgCsTpl.Common;
 using TswgCsTpl.Ui.Infra;
-using TswgCsTpl.Ui.Views.User;
+using TswgCsTpl.Ui.Views.Account;
 
 public partial class ViewMain{
 
@@ -29,21 +29,17 @@ public partial class ViewMain{
 	}
 
 	protected override partial obj Build(VmMain Vm){
-		// GridStack 是「Grid ＋ 自動落號」的容器：它自己不是 Control，
-		// 真正進控件樹的是它包住的那個 Grid（故最後回傳 Root.Grid）。
-		Root.Grid.RowDefinitions = RowDefinitions.Parse("Auto,Auto,*");
-
-		Root.Add(
+		// 四列：標題／狀態／按鈕／賬戶面板。最後一列用 * 讓賬戶面板吃掉剩餘高度。
+		Root.Rows("Auto,Auto,Auto,*")
+		.Children(
 			new TextBlock()
 				.With(t => {
 					_TxtTitle = t;
 				})
 				.Text(Todo.I18n("TswgCsTpl 前端骨架"))
 				.FontSize(20)
-				.Margin(new Thickness(12, 12, 12, 0))
-		);
+				.Margin(new Thickness(12, 12, 12, 0)),
 
-		Root.Add(
 			new TextBlock()
 				.With(t => {
 					_TxtStatus = t;
@@ -51,10 +47,8 @@ public partial class ViewMain{
 				// 編譯期綁定：第二個參數是 Vm 實例、第三個是成員選擇器。
 				// 禁止 new Binding("StatusText") 那類字串路徑（不兼容 AOT）。
 				.Text(Vm, x => x.StatusText)
-				.Margin(new Thickness(12, 8))
-		);
+				.Margin(new Thickness(12, 8)),
 
-		Root.Add(
 			new Button()
 				.With(b => {
 					_BtnAdd = b;
@@ -63,12 +57,12 @@ public partial class ViewMain{
 					b.OnClick(_ => Vm.AddOne());
 				})
 				.Content(Todo.I18n("加一"))
-				.VerticalAlignment(VAlign.Top)
+				.VerticalAlignment(VAlign.Top),
+
+			new ViewAccount()
 		);
 
-		Root.Add(new ViewAccount());
-
-		return Root.Grid;
+		return Root;
 	}
 }
 

@@ -10,10 +10,5 @@
 		<RootNamespace>TswgCsTpl</RootNamespace>
 	</PropertyGroup>
 
-	<!-- 語言資源：內嵌進程序集，四端（含 Android／WASM）都用同一份載入邏輯，不必各端複製檔案。
-		 I18nDict 從「自己所在程序集」找資源，故只有本專案需要內嵌。 -->
-	<ItemGroup>
-		<EmbeddedResource Include="Infra/I18n/Languages/*.json" />
-	</ItemGroup>
-
 </Project>
+

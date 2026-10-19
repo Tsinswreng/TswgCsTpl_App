@@ -6,7 +6,7 @@ using TswgCsTpl.Common;
 using TswgCsTpl.Shared.User.Svc;
 using TswgCsTpl.Ui.Client;
 using TswgCsTpl.Ui.Views.Main;
-using TswgCsTpl.Ui.Views.User;
+using TswgCsTpl.Ui.Views.Account;
 
 [Doc($$"""
 UI 層的依賴注入裝配（程序集 `TswgCsTpl.Ui` → {nameof(DiUi)}）。
@@ -45,3 +45,4 @@ public static class DiUi {
 		return z;
 	}
 }
+

@@ -14,7 +14,7 @@ using Tsinswreng.CsCore;
 控件樹由 `Build` 的回傳值描述，父子關係用 `.Children(...)`；
 事件用生成的 `.OnClick(...)`，綁定用生成的 `.Text(Vm, x => x.Xxx)`——全程沒有字串路徑。
 
-*版面*：根節點是 `GridStack`（Avln.Grid 的順序容器，子項一加進來就自動落號），
+*版面*：根節點是 `StackGrid`（Avln.Grid 的順序容器，子項一加進來就自動落號），
 三列＝標題（Auto）｜狀態（Auto）｜按鈕（*）。故不必自己算 Grid 的行號。
 ")]
 public partial class ViewMain : AppViewBase<VmMain>{
@@ -27,9 +27,9 @@ View 只能有無參構造器：Declarative 的視圖工廠與依賴注入都依
 	// ── 佈局容器 ──
 
 	[Doc(@"根容器。`IsRow: true` 表示全為行的佈局（子項依加入順序往下排）。
-一個 GridStack 只能全為行或全為列；需要兩維時就嵌套，不要同時設行與列。
+一個 StackGrid 只能全為行或全為列；需要兩維時就嵌套，不要同時設行與列。
 ")]
-	public GridStack Root = new(IsRow: true);
+	public StackGrid Root = new(IsRow: true);
 
 	// ── 關鍵控件 ──
 	// 頁面中涉及輸入操作、資訊展示的控件都提為 public 成員，方便測試與後續規劃。
@@ -62,3 +62,4 @@ View 只能有無參構造器：Declarative 的視圖工廠與依賴注入都依
 		public const str MainBtn = nameof(MainBtn);
 	}
 }
+
