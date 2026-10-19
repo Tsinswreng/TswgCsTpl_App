@@ -1,7 +1,6 @@
 namespace TswgCsTpl.Shared.User.Svc;
 
 using Tsinswreng.CsCore;
-using TswgCsTpl.Infra.Err;
 using TswgCsTpl.Shared.User.Models.Req;
 using TswgCsTpl.Shared.User.Models.Resp;
 
@@ -22,7 +21,7 @@ public interface ISvcUser {
 	#Prm[{{nameof(Req)}}][註冊請求。]
 	#Throw[{{nameof(KeysErr.User.UniqNameTaken)}}][登錄名已被佔用時。]
 	#Throw[{{nameof(KeysErr.User.EmailTaken)}}][郵箱已被佔用時。]
-	#Throw[{{nameof(KeysErr.Common.ArgErr)}}][必填項缺失或格式不合法時。]
+	#Throw[{{nameof(KeysErr.Common.ArgErr__)}}][必填項缺失或格式不合法時。]
 	""")]
 	public Task<nil> Register(ReqRegister Req, CT Ct);
 
@@ -48,4 +47,6 @@ public interface ISvcUser {
 	""")]
 	public Task<RespUser> Me(CT Ct);
 }
+
+
 

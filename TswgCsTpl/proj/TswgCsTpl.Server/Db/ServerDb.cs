@@ -5,7 +5,6 @@ using Tsinswreng.CsCore;
 using Tsinswreng.CsSql;
 using Tsinswreng.CsSql.Postgres;
 using TswgCsTpl.Infra;
-using TswgCsTpl.Infra.Err;
 using TswgCsTpl.Shared.Ids;
 using TswgCsTpl.Server.Infra.Cfg;
 using TswgCsTpl.Shared.Base;
@@ -137,5 +136,6 @@ public class ServerTblMgrIniter {
 		return NIL;
 	}
 }
+
 
 

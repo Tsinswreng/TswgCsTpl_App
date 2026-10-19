@@ -5,6 +5,7 @@
 // 這些別名（GUT／RowDef／VAlign…）出現頻率極高，分散宣告只會各處不一致。
 
 global using Tsinswreng.CsCore;
+global using Tsinswreng.CsErr;
 
 global using GUT = Avalonia.Controls.GridUnitType;
 global using ColDef = Avalonia.Controls.ColumnDefinition;
@@ -15,3 +16,4 @@ global using HAlign = Avalonia.Layout.HorizontalAlignment;
 global using BindingMode = Avalonia.Data.BindingMode;
 global using IBinding = Avalonia.Data.BindingBase;
 global using Style = Avalonia.Styling.Style;
+

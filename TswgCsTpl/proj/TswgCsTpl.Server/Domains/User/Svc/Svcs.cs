@@ -5,7 +5,6 @@ using System.Text;
 using Tsinswreng.CsCore;
 using Tsinswreng.CsErr;
 using Tsinswreng.CsSql;
-using TswgCsTpl.Infra.Err;
 using TswgCsTpl.Server.Db.Migrations;
 using TswgCsTpl.Server.Domains.User.Dao;
 using TswgCsTpl.Server.Infra;
@@ -251,18 +250,18 @@ public class SvcUser : ISvcUser {
 
 	[Doc($$"""
 	校驗註冊請求的基本形狀（唯一性在事務內查庫）。
-	#Throw[{{nameof(KeysErr.Common.ArgErr)}}][任一條規則不滿足時，參數為字段名。]
+	#Throw[{{nameof(KeysErr.Common.ArgErr__)}}][任一條規則不滿足時，參數為字段名。]
 	""")]
 	public static void ValidateRegister(ReqRegister Req) {
 		var Name = Req.UniqName.Trim();
 		if (Name.Length < UniqNameMin || Name.Length > UniqNameMax) {
-			throw KeysErr.Common.ArgErr.ToErr(nameof(ReqRegister.UniqName));
+			throw KeysErr.Common.ArgErr__.ToErr(nameof(ReqRegister.UniqName));
 		}
 		if (!IsEmailValid(Req.Email.Trim())) {
-			throw KeysErr.Common.ArgErr.ToErr(nameof(ReqRegister.Email));
+			throw KeysErr.Common.ArgErr__.ToErr(nameof(ReqRegister.Email));
 		}
 		if (Req.Password.Length < PasswordMin) {
-			throw KeysErr.Common.ArgErr.ToErr(nameof(ReqRegister.Password));
+			throw KeysErr.Common.ArgErr__.ToErr(nameof(ReqRegister.Password));
 		}
 	}
 
@@ -295,7 +294,7 @@ public class SvcUser : ISvcUser {
 
 	public async Task<RespLogin> Login(ReqLogin Req, CT Ct) {
 		if (string.IsNullOrWhiteSpace(Req.Identity) || string.IsNullOrEmpty(Req.Password)) {
-			throw KeysErr.Common.ArgErr.ToErr(nameof(ReqLogin.Identity));
+			throw KeysErr.Common.ArgErr__.ToErr(nameof(ReqLogin.Identity));
 		}
 		var Identity = Req.Identity.Trim();
 		return await SqlCmdMkr.RunInTxn(Ct, async (Ctx) => {
@@ -347,4 +346,6 @@ public class SvcUser : ISvcUser {
 		}
 	}
 }
+
+
 

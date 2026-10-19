@@ -131,13 +131,13 @@ public static class DiUi{
 
 #H[異常與標籤約定][
 	例外一律用 `Tsinswreng.CsErr`：`ErrNode.Mk` 造鍵、`ToErr(...)` 填參數、`TypedErr` 往外拋。
-	鍵族見 `Common/Err/KeysErr.cs`, 文案在 `Languages/*.json` 的 `Error.*`。
+	鍵族見專案根的 `KeysErr.cs`（`KeysErr`／`AppErrTags` 置於根命名空間 `TswgCsTpl`, 故不必 using）, 文案在 `Languages/*.json` 的 `Error.*`。
 
 	*默認語義：不帶標籤 ＝ 公開可見的業務異常*（可示予用戶、由前端按鍵翻文案）。
 	這是絕大多數錯誤的形態, 故裸 `Mk` 就是正確寫法, 不需要任何標籤。
 	CsErr 不提供 `MkB`／`MkS`, 也不規定標籤詞彙——標籤屬應用策略。
 
-	少數「不可示人」的情況才自己加標籤（見 `Common/Err/AppErrTags.cs`）:
+	少數「不可示人」的情況才自己加標籤（見 `AppErrTags.cs`）:
 	+ `Private`：消息含內部細節（SQL、堆棧、第三方原文…）
 	+ `SysErr`：系統級故障（數據庫、IO、外部服務）
 
@@ -241,7 +241,10 @@ App.DiOrMk
 	- `Di`
 	- `AppLog`
 	- `Todo`
+	- `KeysErr`
 	要麼就置于根命名空間的直接子層(在本項目中即`TswgCsTpl`),
-	要麼就用`global using`實現
+	要麼就用`global using`實現。
+	目前 `Tsinswreng.CsErr` 走全域 using（`proj/TypeAlias.cs` 與 `Frontend/GlobalUsing.cs`），故拋錯處只寫 `KeysErr.X.ToErr(...)` 即可。
 ]
+
 

@@ -1,4 +1,4 @@
-namespace TswgCsTpl.Infra.Err;
+namespace TswgCsTpl;
 
 using Tsinswreng.CsErr;
 using K = Tsinswreng.CsErr.IErrNode;
@@ -23,9 +23,9 @@ public static class KeysErr {
 
 		[Doc($$"""
 		參數不合法。佔位符填字段名。
-		#Eg[`throw {nameof(ArgErr)}.ToErr(nameof(ReqLogin.Identity))`]
+		#Eg[`throw {nameof(ArgErr__)}.ToErr(nameof(ReqLogin.Identity))`]
 		""")]
-		public static K ArgErr = Mk(_R, [nameof(ArgErr)]);
+		public static K ArgErr__ = Mk(_R, [nameof(ArgErr__)]);
 
 		[Doc("未預期的失敗。回應給用戶時只說「請稍後重試」，詳細原因看服務端日誌。")]
 		public static K UnknownErr = Mk(_R, [nameof(UnknownErr)]);
@@ -59,3 +59,5 @@ public static class KeysErr {
 		public static K TokenExpired = Mk(_R, [nameof(TokenExpired)]);
 	}
 }
+
+

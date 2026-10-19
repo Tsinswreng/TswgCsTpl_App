@@ -1,4 +1,4 @@
-namespace TswgCsTpl.Infra.Err;
+namespace TswgCsTpl;
 
 using Tsinswreng.CsCore;
 
@@ -23,3 +23,4 @@ public static class AppErrTags {
 	[Doc("不可示予用戶：詳情只進服務端日誌，回應裡不帶。沒標這個就是默認可示人。")]
 	public static str Private = nameof(Private);
 }
+

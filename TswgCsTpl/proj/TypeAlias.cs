@@ -21,6 +21,7 @@ global using nil = System.Object;
 global using CT = System.Threading.CancellationToken;
 #pragma warning disable CS0436
 global using Tsinswreng.CsCore;
+global using Tsinswreng.CsErr;
 global using static Tsinswreng.CsTypeAlias.Nil;
 namespace Tsinswreng.CsTypeAlias {
 	internal class Nil{
@@ -32,3 +33,4 @@ namespace Tsinswreng.CsTypeAlias {
 //使nil潙空object即可
 //蔿防跨項目不一致、勿自定義public class Nil_{ public static Nil_ Nil = null!; }
 //#pragma warning restore CS8981
+

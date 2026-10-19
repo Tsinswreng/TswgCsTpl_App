@@ -22,7 +22,7 @@
 	},
 	"Error": {
 		"Common": {
-			"ArgErr": "Invalid argument: {0}",
+			"ArgErr__": "Invalid argument: {0}",
 			"UnknownErr": "The server could not handle the request. Please try again later.",
 			"NetWorkErr": "Cannot reach the server. Please check your network."
 		},
@@ -35,4 +35,5 @@
 		}
 	}
 }
+
 
