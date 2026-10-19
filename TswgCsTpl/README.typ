@@ -130,20 +130,10 @@ public static class DiUi{
 ]
 
 #H[異常與標籤約定][
-	例外一律用 `Tsinswreng.CsErr`：`ErrNode.Mk` 造鍵、`ToErr(...)` 填參數、`TypedErr` 往外拋。
-	鍵族見專案根的 `KeysErr.cs`（`KeysErr`／`AppErrTags` 置於根命名空間 `TswgCsTpl`, 故不必 using）, 文案在 `Languages/*.json` 的 `Error.*`。
-
-	*默認語義：不帶標籤 ＝ 公開可見的業務異常*（可示予用戶、由前端按鍵翻文案）。
-	這是絕大多數錯誤的形態, 故裸 `Mk` 就是正確寫法, 不需要任何標籤。
-	CsErr 不提供 `MkB`／`MkS`, 也不規定標籤詞彙——標籤屬應用策略。
-
-	少數「不可示人」的情況才自己加標籤（見 `AppErrTags.cs`）:
-	+ `Private`：消息含內部細節（SQL、堆棧、第三方原文…）
-	+ `SysErr`：系統級故障（數據庫、IO、外部服務）
-
-	對外出口（`GlobalErrHandler`）的判斷因此是反的:
-	**沒標 `Private`／`SysErr` 的 `TypedErr` ⇒ 400 ＋ 錯誤鍵**；其餘一律 500, 細節只進服務端日誌。
-	換句話說, 忘了加 `Private` 的後果是「漏給前端」——這正是為甚麼要把這個默認寫成顯式的一句話。
+	用 `Tsinswreng.CsErr`庫。
+	參見
+	- KeysErr
+	- AppErrTags
 ]
 
 #H[基本存儲區路徑][
