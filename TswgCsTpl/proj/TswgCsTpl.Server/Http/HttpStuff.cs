@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Routing;
 using Tsinswreng.CsCore;
 using Tsinswreng.CsErr;
 using Tsinswreng.CsErr.Results;
+using TswgCsTpl.Infra.Err;
 using TswgCsTpl.Infra.Json;
 using TswgCsTpl.Infra.Url;
 using TswgCsTpl.Shared.User.Models.Req;
@@ -108,7 +109,11 @@ public class GlobalErrHandler : IExceptionHandler {
 	[Doc("處理異常。業務異常回 400，其餘 500。")]
 	public async ValueTask<bool> TryHandleAsync(HttpContext Ctx, Exception Err, CT Ct) {
 		Log.LogError(Err, "未處理的例外。Path={Path}; Method={Method}", Ctx.Request.Path, Ctx.Request.Method);
-		if (Err is TypedErr Te) {
+		// 約定：沒標 Private／SysErr 的業務異常即「可示予用戶」，原樣回 400 ＋ 錯誤鍵。
+		// 非 TypedErr（真正未預期的例外）一律 500，細節只進日誌。
+		if (Err is TypedErr Te
+			&& !Te.Tags.Contains(AppErrTags.Private)
+			&& !Te.Tags.Contains(AppErrTags.SysErr)) {
 			Ctx.Response.StatusCode = 400;
 			Ctx.Response.ContentType = "application/json; charset=utf-8";
 			var View = (ITypedErrView)Te;
@@ -122,5 +127,8 @@ public class GlobalErrHandler : IExceptionHandler {
 		return true;
 	}
 }
+
+
+
 
 

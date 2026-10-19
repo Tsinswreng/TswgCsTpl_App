@@ -129,6 +129,23 @@ public static class DiUi{
 	源生成器、模板, 一律寫在 `proj/Directory.Build.props`, 各 csproj 不再重複聲明。
 ]
 
+#H[異常與標籤約定][
+	例外一律用 `Tsinswreng.CsErr`：`ErrNode.Mk` 造鍵、`ToErr(...)` 填參數、`TypedErr` 往外拋。
+	鍵族見 `Common/Err/KeysErr.cs`, 文案在 `Languages/*.json` 的 `Error.*`。
+
+	*默認語義：不帶標籤 ＝ 公開可見的業務異常*（可示予用戶、由前端按鍵翻文案）。
+	這是絕大多數錯誤的形態, 故裸 `Mk` 就是正確寫法, 不需要任何標籤。
+	CsErr 不提供 `MkB`／`MkS`, 也不規定標籤詞彙——標籤屬應用策略。
+
+	少數「不可示人」的情況才自己加標籤（見 `Common/Err/AppErrTags.cs`）:
+	+ `Private`：消息含內部細節（SQL、堆棧、第三方原文…）
+	+ `SysErr`：系統級故障（數據庫、IO、外部服務）
+
+	對外出口（`GlobalErrHandler`）的判斷因此是反的:
+	**沒標 `Private`／`SysErr` 的 `TypedErr` ⇒ 400 ＋ 錯誤鍵**；其餘一律 500, 細節只進服務端日誌。
+	換句話說, 忘了加 `Private` 的後果是「漏給前端」——這正是為甚麼要把這個默認寫成顯式的一句話。
+]
+
 #H[基本存儲區路徑][
 	對于[不運行在瀏覽器環境中]的程序,
 	要爲應用儲存區目錄做抽像:
