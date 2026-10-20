@@ -49,6 +49,9 @@ internal static partial class Program{
 			case nameof(TestAotWin):
 				await TestAotWin.Main(Ctx, Ct);
 				break;
+			case nameof(GenAppJsonCtx):
+				await GenAppJsonCtx.Main(Ctx, Ct);
+				break;
 			default:
 				throw new ArgumentException($"Unknown TswgCsTpl script: {Args[0]}.", nameof(Args));
 		}
@@ -57,7 +60,8 @@ internal static partial class Program{
 	/// 列出可由 dotnet run -- <entry> 呼叫的腳本名稱。
 	private static void PrintUsage(){
 		Console.Error.WriteLine("Usage: dotnet run --project proj/TswgCsTpl.Scripts -- <entry>");
-		Console.Error.WriteLine("Entries: Test, TestAotWin");
+		Console.Error.WriteLine("Entries: Test, TestAotWin, GenAppJsonCtx");
+		Console.Error.WriteLine("GenAppJsonCtx：改過 DTO／實體／強類型 Id 之後跑一次，重寫 Tsinswreng.SrcGen/TswgCsTpl.Gen.g.cs。");
 	}
 
 	/// 讓編譯器提供腳本源文件路徑，故腳本不依賴啟動時的當前目錄。

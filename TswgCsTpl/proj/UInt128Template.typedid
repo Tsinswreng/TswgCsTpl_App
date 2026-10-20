@@ -3,13 +3,37 @@
 // - 本檔不能寫 using 語句，否則源生成產物會編譯失敗；故一律用全限定名。
 // - 不能改寫成 record struct，只能是 struct。
 //
-// 這個模板的選擇：以 UInt128 為底（用 ULID 填充，天然有序）、對外字符串走 Low64Base
+// 這個模板的選擇：以 UInt128 為底（用 ULID 填充、天然有序）、對外字符串走 Low64Base
 //（22 字元、URL 安全），數據庫裡以 bytea(16 位元組) 存儲（見 IIdUInt128.MkTypeMapFn）。
+//
+// 對外 JSON 形態：實作 IRawValueSerializable，由 Tsinswreng.CsJson 的 JsonConvtr<T> 接手，
+// 序列化成裸的 Low64Base 字串（不是 {"Value":…}），反序列化再從字串還原。
+// 源碼生成器（proj/TswgCsTpl.Scripts 的 GenAppJsonCtx）會為每個此類 Id 產一個
+// new JsonConvtr<IdXxx>() 並掛進 AppJsonCtx 的轉換器清單。
 
 partial struct PLACEHOLDERID
 	: global::TswgCsTpl.Shared.Ids.IIdUInt128
 	, global::System.IEquatable<PLACEHOLDERID>
+	, global::Tsinswreng.CsCore.IRawValueSerializable
 {
+	/// 從 JSON 讀出的裸值還原 Id：只認字串（Low64Base），其餘原樣退回。
+	object? global::Tsinswreng.CsCore.I_ToDeSerialized.ToDeSerialized(object? Obj){
+		if(Obj is global::System.String S){
+			return new PLACEHOLDERID(
+				global::Tsinswreng.CsU128Id.ToolU128Id.Low64BaseToUInt128(S)
+			);
+		}
+		return Obj;
+	}
+
+	/// 寫成 JSON 裸值：本身的 Low64Base 字串形式，與 ToString 一致。
+	object? global::Tsinswreng.CsCore.I_ToSerialized.ToSerialized(object? Obj){
+		if(Obj is PLACEHOLDERID){
+			return Obj.ToString();
+		}
+		return Obj;
+	}
+
 	/// 無參構造器即「新生成一個 Id」：用 ULID 填充 UInt128。
 	public PLACEHOLDERID():this(0){
 		Value = global::Tsinswreng.CsU128Id.ToolU128Id.NewUlid<
@@ -17,7 +41,8 @@ partial struct PLACEHOLDERID
 		>().Value;
 	}
 
-	/// Id 本體。對外只暴露字符串形式，故本成員不參與 JSON 序列化。
+	/// Id 本體。它不會以 `{ "Value": … }` 的形式出現在 JSON：
+	/// 整個 struct 由 JsonConvtr 寫成 Low64Base 字串（見檔頭說明）。
 	public global::System.UInt128 Value { get; set; }
 
 	public PLACEHOLDERID(global::System.UInt128 Value) => this.Value = Value;

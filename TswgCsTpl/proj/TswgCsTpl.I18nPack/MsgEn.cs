@@ -1,11 +1,15 @@
-namespace TswgCsTpl.Infra.I18n;
+namespace TswgCsTpl.I18nPack;
 
 using Tsinswreng.CsCore;
+using Tsinswreng.CsI18n;
+using TswgCsTpl.Infra.I18n;
 
-[Doc("英文譯文。鍵與 {nameof(MsgZhCn)} 完全對應；格式同屬位置參數。")]
+[Doc($$"""
+英文譯文。鍵與 {{nameof(MsgZhCn)}} 完全對應；缺一條 {{nameof(I18nSet.Verify)}} 會在構建期報出來。
+""")]
 public static class MsgEn {
 	[Doc("本語言的全部譯文。")]
-	public static IList<I18nEntry> Entries { get; } = [
+	public static IList<MsgEntry> Entries { get; } = [
 		// ── 界面文案 ──
 		new(KeysI18n.AppTitle, "TswgCsTpl"),
 		new(KeysI18n.Login, "Log in"),

@@ -1,6 +1,5 @@
 namespace TswgCsTpl.Server.Http;
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Routing;
 using Tsinswreng.CsCore;
 using Tsinswreng.CsErr;
-using Tsinswreng.CsErr.Results;
 using TswgCsTpl.Infra.Json;
 using TswgCsTpl.Infra.Url;
 using TswgCsTpl.Shared.User.Models.Req;
@@ -16,12 +14,9 @@ using TswgCsTpl.Shared.User.Svc;
 
 [Doc("HTTP 響應統一包成 `WebAns<T>`（Data＋Errors），故前端只需要一種解析路徑。")]
 public static class HttpRtn {
-	[Doc("成功帶數據。用源生成上下文序列化，AOT 安全。")]
+	[Doc("成功帶數據。包絡的序列化細節集中在 WireJson，這裡只管 HTTP 這一層。")]
 	public static IResult Ok<T>(T Data) {
-		var Json = JsonSerializer.Serialize(
-			new WebAns<T> { Data = Data }, typeof(WebAns<T>), AppJsonCtx.Wire.Options
-		);
-		return Results.Text(Json, "application/json; charset=utf-8");
+		return Results.Text(WireJson.Ans(Data), "application/json; charset=utf-8");
 	}
 
 	[Doc("成功且無數據。")]
@@ -116,9 +111,7 @@ public class GlobalErrHandler : IExceptionHandler {
 			Ctx.Response.StatusCode = 400;
 			Ctx.Response.ContentType = "application/json; charset=utf-8";
 			var View = (ITypedErrView)Te;
-			var Json = JsonSerializer.Serialize(
-				WebAns.Mk(null, [View]), typeof(IWebAns<obj>), AppJsonCtx.Wire.Options
-			);
+			var Json = WireJson.Err([View]);
 			await Ctx.Response.WriteAsync(Json, Ct);
 			return true;
 		}

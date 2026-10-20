@@ -7,11 +7,20 @@
 		<Nullable>enable</Nullable>
 		<!-- 各具名腳本的 Main(Root, CancellationToken) 由 Program dispatcher 呼叫；只有 Program.Main 是 CLR entry point。 -->
 		<NoWarn>$(NoWarn);CS0028</NoWarn>
+		<!-- GenAppJsonCtx 用 Roslyn MSBuildWorkspace 分析專案，而 Roslyn 依賴大量反射與動態代碼，
+		     根本無法 NativeAOT；再者 PublishAot=true 會把 runtimeconfig 的
+		     System.Text.Json 反射開關關掉，害 SDK 的 workload manifest 解析失敗。
+		     腳本本身不需要 AOT（它只是開發期工具），故在此明確關掉。 -->
+		<PublishAot>false</PublishAot>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<!-- 模板倉庫不含 CsSh 源碼，固定從 NuGet 引用與現有 Ngan.Dict/CsSql 的 Scripts 一致 -->
 		<PackageReference Include="Tsinswreng.CsSh" Version="0.3.0-alpha" />
+		<!-- GenAppJsonCtx：以 Roslyn 載入 proj/TswgCsTpl 專案、按語義分析收集標記接口的實現者。 -->
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.8.0" />
+		<PackageReference Include="Microsoft.Build.Locator" Version="1.6.10" />
 	</ItemGroup>
 
 </Project>

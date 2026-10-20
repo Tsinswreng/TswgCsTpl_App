@@ -2,6 +2,7 @@ namespace TswgCsTpl.Shared.Ids;
 
 using Tsinswreng.CsSql;
 using Tsinswreng.CsU128Id;
+using TswgCsTpl.Infra.Json;
 
 [Doc($$"""
 強類型 Id 的共同契約：包一個底層標量值。
@@ -24,6 +25,13 @@ public interface IStrongId<T>
 具體結構由 `StronglyTypedId` 源生成器照 `UInt128Template.typedid` 產生，
 故每個 Id 型別都自動具備：無參構造器（= 新 Id）、`Value`、與 UInt128 的隱式互轉、`ToString` 走 Low64Base。
 
+*為何繼承 {nameof(IAppSerializable)}*：Id 會被當成實體成員型別、也會出現在 DTO 上面，
+故它的成員元資料要能被源生成靜態列出。打在這個介面上，三個 Id 型別就一次收全。
+
+*對外的 JSON 形態*：`UInt128Template.typedid` 讓每個 Id 額外實作
+{nameof(Tsinswreng.CsCore.IRawValueSerializable)}，由 `Tsinswreng.CsJson` 的
+`JsonConvtr<T>` 寫成 Low64Base 字串——不是 `{ "Value": … }`。
+
 #Eg[
 	```cs
 	[StronglyTypedId(ConstStrongTypeIdTemplate.UInt128)]
@@ -35,7 +43,7 @@ public interface IStrongId<T>
 	```
 ]
 """)]
-public interface IIdUInt128 : IStrongId<UInt128> {
+public interface IIdUInt128 : IStrongId<UInt128>, IAppSerializable {
 }
 
 [Doc($$"""

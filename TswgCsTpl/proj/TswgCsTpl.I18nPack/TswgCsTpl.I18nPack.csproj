@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- 譯文只被「構建期語言包生成器」引用，不隨主程式發佈，故不必 AOT。 -->
+		<PublishAot>false</PublishAot>
+		<RootNamespace>TswgCsTpl.I18nPack</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 譯文要引用鍵（KeysI18n／KeysErr），故引用共享層；反過來共享層不得引用本專案。 -->
+		<ProjectReference Include="../TswgCsTpl/TswgCsTpl.csproj" />
+	</ItemGroup>
+
+</Project>

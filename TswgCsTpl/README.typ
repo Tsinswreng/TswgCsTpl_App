@@ -23,11 +23,15 @@ proj/TswgCsTpl.Scripts 是模板附帶的維護腳本項目：
 
 - `Test`：以 `dotnet run` 直接運行 TswgCsTpl.Test（非 AOT 的快速驗證）
 - `TestAotWin`：以 win-x64 NativeAOT 發布 TswgCsTpl.Test 後運行發布物
+- `GenAppJsonCtx`：掃描 `IAppSerializable` 的實現者，重寫
+  `proj/TswgCsTpl/Tsinswreng.SrcGen/TswgCsTpl.Gen.g.cs`（見「JSON 序列化與源碼生成」章）。
+  改了 DTO／實體／強類型 Id 之後手動跑一次。
 
 用法（在模板根目錄）：
 ```sh
 dotnet run --project proj/TswgCsTpl.Scripts/TswgCsTpl.Scripts.csproj -- Test
 dotnet run --project proj/TswgCsTpl.Scripts/TswgCsTpl.Scripts.csproj -- TestAotWin
+dotnet run --project proj/TswgCsTpl.Scripts/TswgCsTpl.Scripts.csproj -- GenAppJsonCtx
 ```
 
 在 Scripts 專案內新增命令時：
@@ -134,18 +138,43 @@ public static class DiUi{
 	參見
 	- KeysErr
 	- AppErrTags
+
+	+ 默認＝公開可見的業務異常：`ErrNode.Mk` 造出的鍵不帶標籤，前端會翻成文案給用戶看
+	+ 只有「不可示人」的情況才自己加 `AppErrTags.Private`／`AppErrTags.SysErr`；
+	`GlobalErrHandler` 會把帶這兩個標籤的錯換成 `Error/Common/UnknownErr`，詳情只進日誌
+	+ 新增錯誤鍵分組時，父節點要用 `ErrRoot.Node`，*不要*用 `KeysErr._Root`：
+	分組類初始化時讀外層類的成員會觸發外層類初始化，而外層類初始化又要讀 `KeysErr.All`（內含分組成員），
+	CLR 不允許重入，`All` 就會永久帶着 null。根搬到獨立類型 `ErrRoot` 就是為了斷開這個環
 ]
 
 #H[界面文案與譯文][
-	鍵：`Common/I18n/KeysI18n.cs`，*平鋪一層*、不按畫面分組；同一鍵同一譯文（msg-fmt-key 的理念）。
-	譯文：`Common/I18n/MsgZhCn.cs`、`MsgEn.cs`，直接用 C\# 寫，不生成 JSON、不讀檔。
-	+ 每條寫成 `new(KeysI18n.Login, "登錄")`——鍵直接引用業務側的鍵物件，*改名就編譯錯*
-	+ 錯誤文案同理：`new(KeysErr.User.PasswordNotMatch, "登錄名或密碼不正確")`，鍵規範化成 `Error/` ＋ 錯誤路徑
-	+ 模板只用位置參數 `{0}`、`{1}`；C\# 原始字符串可多行、完全不必轉義（JSON 做不到這點）
-	+ 啟動自檢：`DiCore.SetupCore` 會跑 `AppI18n.Verify()` 比對「每個語言的條目」與「`KeysI18n.All` 全集」，
-	缺譯／重複／未登記的鍵只記日誌、不中斷啟動
-	+ 切換語言：`AppI18n.Use("en")`；已渲染的界面需自行重繪
-	+ 鍵那側的參數佔位照 msg-fmt-key 規範：一個 `__` 對應一個位置參數（例：`Select__From__`）
+	分四層，職責不混：
+	+ 鍵：`proj/TswgCsTpl/Common/I18n/KeysI18n.cs`（界面文案，*平鋪一層*）與根目錄 `KeysErr.cs`（錯誤，按領域分組）
+	+ 譯文：`proj/TswgCsTpl.I18nPack`——*不隨主程式發佈*，只被構建期工具引用
+	+ 生成：`proj/TswgCsTpl.LangPack`——構建期把譯文導出成每種語言一個 JSON，並做覆蓋率自檢
+	+ 執行時：`AppI18n` 只載入*當前*語言的 JSON（`Languages/<語言>.json`）
+
+	#H[為甚麼不在主程式裡寫死所有語言][
+		把每種語言的譯文都編進組件，沒用到的語言也佔發佈體積（字串進 metadata，UTF-16）
+		與內存（靜態初始化就把每個語言的字典建好）。改成分檔之後：體積只算主程式，
+		內存只算真的切過去的語言。
+	]
+
+	#H[怎麼運作][
+		+ 條目型別由*應用自己*定義：`proj/TswgCsTpl.I18nPack/MsgEntry.cs`（`record MsgEntry(鍵物件, 模板)`）；
+		`Tsinswreng.CsI18n` 只認「鍵 → 模板」，不提供條目型別，故由 `Pack.EntriesToMap(lang)` 攤成字典再 `AddLang`
+		+ 譯文每條寫成 `new(KeysI18n.Login, "登錄")`——鍵直接引用鍵物件，*改名就編譯錯*
+		+ 錯誤文案同理：`new(KeysErr.User.PasswordNotMatch, "登錄名或密碼不正確")`；`KeysErr` 立根於 `Error`，
+		故錯誤鍵本身就是 i18n 鍵（`Error/User/PasswordNotMatch`）
+		+ 生成器先跑 `Verify(KeysI18n.All, KeysErr.All)`（界面文案一組、錯誤文案一組），缺譯或空譯文就*讓構建失敗*
+		+ 生成器還會比對「主程式 `AppI18n.Langes`」與「語言包專案的清單」，不一致就失敗（防「選得到、載不到」）
+		+ 四個宿主 csproj 都 `<Import Project="..\..\LangPack.targets" />`：構建時先跑生成器寫到
+		`proj/_gen/Languages`，再複製成 `$(OutDir)Languages`
+		+ 手動跑：`dotnet run --project proj/TswgCsTpl.LangPack -- <輸出目錄>`
+		+ 切換語言：`AppI18n.Use("en")`——該語言還沒載入時才去讀它的 JSON；已渲染的界面需自行重繪
+		+ 模板格式：ICU MessageFormat（位置參數 `{0}` 照常，需要時可寫複數）
+		+ 鍵那側的參數佔位照 msg-fmt-key 規範：一個 `__` 對應一個位置參數（例：`Select__From__`）
+	]
 ]
 
 #H[基本存儲區路徑][
@@ -188,13 +217,68 @@ IMk
 App.DiOrMk
 
 
+#H[JSON 序列化與源碼生成][
+	一條鏈路、三層職責，全部圍着「NativeAOT 下沒有反射式序列化」這件事：
+
+	+ 標記：`proj/TswgCsTpl/Common/Json/IAppSerializable.cs`——
+	實現它 ＝ 這個型別要能被 JSON 源生成器認識。打在公共介面上（`IPoBase`、`IIdUInt128`）比逐個類打更省。
+	+ 生成：`proj/TswgCsTpl.Scripts` 的 `GenAppJsonCtx`——用 Roslyn（MSBuildWorkspace）載入
+	`proj/TswgCsTpl/TswgCsTpl.csproj`，掃標記接口的實現者，產出
+	`proj/TswgCsTpl/Tsinswreng.SrcGen/TswgCsTpl.Gen.g.cs`（`[JsonSerializable]` ＋ 轉換器清單）。
+	生成物*要入庫*，否則模板第一次複製出來編不過。
+	+ 執行期：`AppJsonCtx`（選項 ＋ 轉換器掛載）、`AppJson`（靜態門面，`AppJson.Inst`）、
+	`WireJson`（響應包絡的編解碼）。業務代碼不直接碰 `System.Text.Json` 的靜態類。
+
+	#H[怎麼用][
+		+ 需要序列化／反序列化：注入 `IJsonSerializer`（`DiCore.SetupCore` 已註冊），
+		拿不到注入的場合用 `AppJson.Inst`；兩者是*同一個實例*。
+		+ 需要寫端點：`HttpRtn.Ok(data)`；要回錯誤包絡：`WireJson.Err([view])`；
+		前端還原：`WireJson.ReadAns<TResp>(body)`（包絡有錯就拋 `TypedErr`）。
+		+ 加了新的 DTO／實體／強類型 Id：先讓它實現 `IAppSerializable`（或掛到已打標記的介面上），
+		再跑一次生成器：
+		`dotnet run --project proj/TswgCsTpl.Scripts -- GenAppJsonCtx`
+		+ 外部型別（`WebAns<T>` 這種泛型閉包）無法打標記，改在生成器的 `ExtraJsonTypes` 手動列出。
+	]
+
+	#H[為甚麼實體（Po）也要進 JSON 上下文][
+		ORM 那條路徑（建表、DbDict⇄實體映射、按名讀寫）走 `ITypeInfoSrc`，
+		而 `AppTypeInfoSrc` 的第一條來源是 `JsonTypeInfoSrc`——只有*登記過的型別*才答得出來，
+		沒登記就落到反射來源。反射在 NativeAOT 下成員元資料被裁掉，等於 ORM 直接崩。
+		故 `IPoBase : IAppSerializable`，實體與 Id 都必須登記。
+	]
+
+	#H[強類型 Id 為甚麼不會變成 {"Value": …}][
+		`proj/UInt128Template.typedid` 讓每個 Id 實作 `IRawValueSerializable`，
+		由 `Tsinswreng.CsJson` 的 `JsonConvtr<T>` 把它寫成裸 Low64Base 字串，反序列化再還原。
+		轉換器清單同樣由生成器列出（掃 `IRawValueSerializable` 的實作者），不手寫。
+	]
+
+	#H[兩個踩過的坑][
+		+ *靜態初始化順序*：`AppJsonCtx.WireOptions` 不能寫成靜態字段初始化器去讀
+		`AppJsonCtx.Default`——生成檔裡的 `Default` 可能還沒初始化，拿到 null 後
+		`TypeInfoResolver` 就靜默變 null，JIT 下一切正常（退回反射）、AOT 下才炸。
+		現寫法 `=> field ??=` 延遲到第一次使用，並在建構期檢查 resolver 非 null、否則直接拋。
+		+ *STJ 有兩份選項表面*：生成期的 `[JsonSourceGenerationOptions]`（在生成檔裡）與
+		運行期的 `WireOptions` 是兩份獨立配置，兩邊不一致時同一個型別走不同路徑會寫出不同結果。
+		改一處就要同改另一處，生成檔裡那段註釋也寫了同樣的提醒。
+	]
+
+	#H[驗證方式][
+		`pwsh -File _verify/Run.ps1` 的第 8 組是行為探針（`_verify/ProbeJson.cs`），
+		真的跑起來檢查：resolver 非 null、不轉命名、null 省略、中文不轉義、
+		成功包絡往返、錯誤包絡拋 `TypedErr`、Id 寫成裸字串且可還原、`ITypeInfoSrc` 能列出實體成員。
+		編譯過不等於行為對，這幾條只有跑起來才看得見。
+	]
+]
+
 #H[用戶系統][
 	一套可直接用的「註冊／登錄／退出登錄」：
 	共享契約在 `proj/TswgCsTpl/Shared/User`、後端在 `proj/TswgCsTpl.Server`、前端在
 	`proj/Frontend/TswgCsTpl.Ui/Client` 與 `Views/User`。
 
 	#H[分層][
-		+ 共享層：DTO、`ISvcUser`、強類型 Id、`KeysErr`、`KeysI18n`、`KeysUrl`、`AppJsonCtx`
+		+ 共享層：DTO、`ISvcUser`、強類型 Id、`KeysErr`、`KeysI18n`、`KeysUrl`、
+		`AppJsonCtx`／`AppJson`／`WireJson`（見「JSON 序列化與源碼生成」章）
 		+ 服務端：`SvcUser`（事務內註冊／登錄）、`SvcSession`（令牌簽發與撤銷）、
 		`DaoUser`／`DaoSession`（CsSql 拼接器查詢）、`FullInit`（由表配置生成 DDL）
 		+ 前端：`ClientUser`（`ISvcUser` 的 HTTP 實現）、`UserSession`（令牌狀態）、`ViewAccount`／`VmAccount`
@@ -221,7 +305,8 @@ App.DiOrMk
 	]
 
 	#H[與 Ngan.Dict 的差異（刻意）][
-		+ 不引入 CsCfg；I18n 自寫 `I18nDict : II18n`（只沿用 CsI18n 的接口與鍵模型），語言檔內嵌為資源
+		+ 不引入 CsCfg；譯文直接寫在 C\# 裡（不生成 JSON、運行時不讀檔、也不內嵌語言資源），
+		鍵與譯文一起編譯檢查，改鍵名就編譯錯
 		+ 認證用「不透明令牌＋會話表」，而不是 JWT＋Redis；不需要額外服務，換來的是每次請求一次索引查詢
 		+ 密碼用 PBKDF2-HMAC-SHA256（BCL 內建），而不是 Argon2id；算法與迭代次數存在密碼行裡，可逐條升級
 		+ 服務接口不吃 `IUserCtx` 參數：身份由傳輸層（令牌）與 `ICurrentUser` 提供
@@ -230,6 +315,8 @@ App.DiOrMk
 	#H[已做到的驗證][
 		+ 共享層、服務端、Ui 全部、以及 Windows／Linux／Browser 三個宿主，都已用 Roslyn（csc）直接編譯通過；
 		Ui 的聲明式寫法是在 Markup.Declarative 生成器參與下編譯的
+		+ I18n 跑過實測：`Verify(KeysI18n.All, KeysErr.All)` 回 0 個問題；
+		`zh-CN` 與 `en` 下取界面文案、取錯誤文案（含位置參數）都正確
 		+ *尚未做*：`dotnet build`（本沙箱裡凡涉及專案引用圖的還原會在 `_GetAllRestoreProjectPathItems` 靜默失敗）、
 		Android 宿主編譯、以及起 PostgreSQL 跑一次註冊→登錄→`/me`→退出的實測
 		+ 強類型 Id 的模板（`UInt128Template.typedid`）在 csc 下沒被 `-additionalfile` 餵進去，
@@ -248,6 +335,10 @@ App.DiOrMk
 	要麼就用`global using`實現。
 	目前 `Tsinswreng.CsErr` 走全域 using（`proj/TypeAlias.cs` 與 `Frontend/GlobalUsing.cs`），故拋錯處只寫 `KeysErr.X.ToErr(...)` 即可。
 ]
+
+
+
+
 
 
 

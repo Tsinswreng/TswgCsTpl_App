@@ -41,4 +41,8 @@
 		<ProjectReference Include="..\TswgCsTpl.Ui\TswgCsTpl.Ui.csproj" />
 	</ItemGroup>
 
+	<!-- 構建期生成語言包並複製到輸出目錄（見該檔頂部說明）。 -->
+	<Import Project="..\..\LangPack.targets" />
+
 </Project>
+

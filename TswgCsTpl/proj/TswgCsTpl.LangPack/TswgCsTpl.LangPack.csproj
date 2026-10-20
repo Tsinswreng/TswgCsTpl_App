@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<!-- 構建期工具，不是要發佈的產物，故不必 AOT（也就可以隨意用反射／JIT）。 -->
+		<PublishAot>false</PublishAot>
+		<RootNamespace>TswgCsTpl.LangPack</RootNamespace>
+		<!-- 這個工具本身不該被當成應用程式碼掃描（例如 UI 的 AOT 分析）。 -->
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- 只需要語言包專案：它已引用共享層，故鍵與譯文都在。 -->
+		<ProjectReference Include="../TswgCsTpl.I18nPack/TswgCsTpl.I18nPack.csproj" />
+	</ItemGroup>
+
+</Project>

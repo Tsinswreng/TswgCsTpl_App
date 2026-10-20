@@ -18,7 +18,7 @@ using Tsinswreng.CsI18n;
 public static class KeysI18n {
 	[Doc("造一個鍵。目前全部是單段，故父節點傳 null。")]
 	static I18nKey Mk1(str Name) {
-		return (I18nKey)I18nKey.Mk(null, [Name]);
+		return I18nKey.Mk(null, [Name]);
 	}
 
 	[Doc("應用標題。")]
@@ -91,3 +91,4 @@ public static class KeysI18n {
 		PasswordMismatch, EmailInvalid, CannotBeEmpty, Me, NotLogin, PleaseRetryLater,
 	];
 }
+

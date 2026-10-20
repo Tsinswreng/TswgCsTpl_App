@@ -38,8 +38,10 @@ public static class Program {
 		});
 
 		// 3: JSON：把源生成上下文放進解析器鏈首位（AOT 必需）。
+		//    這裡只影響「框架自己會序列化的場合」（minimal API 的請求體綁定、ProblemDetails）；
+		//    響應體一律走 HttpRtn/WireJson，用同一份 AppJsonCtx。
 		Builder.Services.ConfigureHttpJsonOptions(o => {
-			o.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonCtx.Wire);
+			o.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonCtx.Default);
 			o.SerializerOptions.PropertyNamingPolicy = null;
 			o.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 		});

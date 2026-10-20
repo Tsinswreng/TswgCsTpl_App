@@ -1,6 +1,7 @@
 namespace TswgCsTpl.Shared.User.Models.Resp;
 
 using Tsinswreng.CsCore;
+using TswgCsTpl.Infra.Json;
 
 [Doc($$"""
 登錄成功響應。
@@ -9,7 +10,7 @@ using Tsinswreng.CsCore;
 對外形態一律用它的 Low64Base 字符串（22 字元、URL 安全），客戶端用 `IdUser.FromLow64Base` 還原。
 這樣也避免了給每個 Id 寫一個 JSON 轉換器。
 """)]
-public class RespLogin {
+public class RespLogin : IAppSerializable {
 	[Doc("用戶 Id（Low64Base 字符串）。")]
 	public str UserId { get; set; } = "";
 
@@ -27,7 +28,7 @@ public class RespLogin {
 }
 
 [Doc("當前用戶信息。用於「我」頁面與登錄狀態校驗。")]
-public class RespUser {
+public class RespUser : IAppSerializable {
 	[Doc("用戶 Id（Low64Base 字符串）。")]
 	public str UserId { get; set; } = "";
 

@@ -36,6 +36,11 @@
 	<ItemGroup>
 		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsKeyNode/proj/Tsinswreng.CsKeyNode/Tsinswreng.CsKeyNode.csproj" />
 		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsErr/proj/Tsinswreng.CsErr/Tsinswreng.CsErr.csproj" />
+		<!-- WebAns/IWebAns/TypedErrView 都在 CsErr.Results（傳輸包絡），不是 CsErr 本體。
+			 少了這一行，`using Tsinswreng.CsErr.Results;` 會找不到型別。 -->
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsErr/proj/Tsinswreng.CsErr.Results/Tsinswreng.CsErr.Results.csproj" />
+		<!-- JSON 序列化門面（IJsonSerializer）與強類型值轉換器（JsonConvtr）。 -->
+		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsJson/proj/Tsinswreng.CsJson/Tsinswreng.CsJson.csproj" />
 		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsI18n/proj/Tsinswreng.CsI18n/Tsinswreng.CsI18n.csproj" />
 		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsU128Id/proj/Tsinswreng.CsU128Id/Tsinswreng.CsU128Id.csproj" />
 		<ProjectReference Include="$(MSBuildThisFileDirectory)../../../Tsinswreng.CsRefl/proj/Tsinswreng.CsRefl/Tsinswreng.CsRefl.csproj" />

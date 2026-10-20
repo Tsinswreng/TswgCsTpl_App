@@ -17,9 +17,14 @@ using static Tsinswreng.CsErr.ErrNode;
 只有「不可示人」的少數情況才自己加 `AppErrTags.Private`（或 `AppErrTags.SysErr`）。
 """)]
 public static class KeysErr {
+	[Doc($$"""
+	根節點。值來自 {{nameof(ErrRoot)}}，此處只是給調用方一個好記的名字。
+	""")]
+	public static K _Root = ErrRoot.Node;
+
+	[Doc("此組的根節點；子鍵都以它為父。")]
 	public static class Common {
-		[Doc("本組的根節點；子鍵都以它為父。")]
-		public static K _R = Mk(null, [nameof(Common)]);
+		public static K _R = Mk(ErrRoot.Node, [nameof(Common)]);
 
 		[Doc($$"""
 		參數不合法。佔位符填字段名。
@@ -37,7 +42,7 @@ public static class KeysErr {
 	[Doc("用戶與認證相關。")]
 	public static class User {
 		[Doc("本組的根節點。")]
-		public static K _R = Mk(null, [nameof(User)]);
+		public static K _R = Mk(ErrRoot.Node, [nameof(User)]);
 
 		[Doc("登錄名已被佔用。")]
 		public static K UniqNameTaken = Mk(_R, [nameof(UniqNameTaken)]);
@@ -57,7 +62,33 @@ public static class KeysErr {
 		[Doc("令牌已過期或被撤銷。客戶端應引導重新登錄。")]
 		public static K TokenExpired = Mk(_R, [nameof(TokenExpired)]);
 	}
+
+	[Doc($$"""
+	全部錯誤鍵。
+
+	*為何要這份清單*：AOT 下不能反射列舉靜態欄位，而覆蓋率自檢需要知道「錯誤文案該有哪些」；
+	新增錯誤鍵時記得同步加進來。少了不會編譯錯，但自檢會報「缺少文案」。
+	""")]
+	public static IList<K> All { get; } = [
+		Common.ArgErr__, Common.UnknownErr, Common.NetWorkErr,
+		User.UniqNameTaken, User.EmailTaken, User.PasswordNotMatch, User.NotLogin, User.TokenExpired,
+	];
 }
+
+[Doc($$"""
+錯誤鍵樹的根。**刻意獨立成一個類型**，而不是 {{nameof(KeysErr)}} 的成員。
+
+*為何*：分組類（{{nameof(KeysErr)}}.Common 等）的鍵要以根為父。若根長在外層 {{nameof(KeysErr)}} 上，
+分組類初始化時讀根就會觸發 {{nameof(KeysErr)}} 初始化；而 {{nameof(KeysErr)}} 初始化又要讀
+{{nameof(KeysErr)}}.All（內含分組成員）——此時分組類**正在**初始化中，CLR 不允許重入，
+成員仍是 null，All 便永久帶着若干 null。根搬到獨立類型後，兩邊互不牽扯。
+""")]
+internal static class ErrRoot {
+	[Doc("根鍵，路徑 `Error`。")]
+	public static K Node = Mk(null, ["Error"]);
+}
+
+
 
 
 

@@ -1,6 +1,7 @@
 namespace TswgCsTpl.Shared.Base;
 
 using Tsinswreng.CsSql;
+using TswgCsTpl.Infra.Json;
 
 [Doc($$"""
 所有實體都有、且由數據庫層自己維護的列。
@@ -10,8 +11,13 @@ using Tsinswreng.CsSql;
 
 *時間一律用 i64 毫秒*：不用專門的時間型別，是為了讓映射、比較、序列化都只有一種形態；
 時間語義（UTC 毫秒）寫在成員名與本註釋裡。
+
+*為何繼承 {nameof(IAppSerializable)}*：實體不是拿來上網線的，但它們的成員要被 CsSql
+按名讀寫（建表、DbDict⇄實體映射），那條路徑走 {nameof(Tsinswreng.CsRefl.ITypeInfoSrc)}；AOT 下反射列舉成員會被裁掉，
+故實體也必須進 JSON 源生成上下文。打在這個介面上，三個實體就一次收全，
+不必逐個 `Po` 加標記。
 """)]
-public interface IPoBase {
+public interface IPoBase : IAppSerializable {
 	[Doc("數據庫插入時間（UTC 毫秒）。由 `SqlRepo` 在插入時填，業務不應改。")]
 	public i64 DbCreatedAt { get; set; }
 

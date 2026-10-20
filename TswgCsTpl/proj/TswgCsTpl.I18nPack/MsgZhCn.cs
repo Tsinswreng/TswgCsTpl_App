@@ -1,19 +1,24 @@
-namespace TswgCsTpl.Infra.I18n;
+namespace TswgCsTpl.I18nPack;
 
 using Tsinswreng.CsCore;
+using Tsinswreng.CsI18n;
+using TswgCsTpl.Infra.I18n;
 
 [Doc($$"""
 簡體中文譯文。
 
-*原文就寫在這裡*：C# 的原始字符串（三引號）可以多行、完全不必轉義，比 JSON 好寫；
-也比「先用 TS 寫再生成 JSON」少一整個生成步驟。
-鍵一律引用 `KeysI18n`／`KeysErr` 的鍵物件，故鍵改名時這裡會編譯錯。
+*原文就寫在這裏*：C# 的原始字符串可以多行、完全不必轉義，比 JSON 好寫；
+鍵一律引用 {{nameof(KeysI18n)}}／{{nameof(KeysErr)}} 的鍵物件，故鍵改名時這裏會編譯錯。
 
-*格式*：只用位置參數 `{0}`、`{1}`（msg-fmt-key 規範，不用具名參數）。
+*這個專案不會隨主程式發佈*：它只被 `TswgCsTpl.LangPack`（構建期工具）引用，
+工具把譯文導出成每種語言一個 JSON，執行時只載入真的用到的語言。
+故「沒用到的語言佔體積、佔內存」這件事不會發生在主程式上。
+
+*格式*：位置參數 `{0}`；默認引擎是 ICU MessageFormat，需要複數時照 ICU 語法寫。
 """)]
 public static class MsgZhCn {
 	[Doc("本語言的全部譯文（界面文案 ＋ 錯誤文案）。")]
-	public static IList<I18nEntry> Entries { get; } = [
+	public static IList<MsgEntry> Entries { get; } = [
 		// ── 界面文案 ──
 		new(KeysI18n.AppTitle, "TswgCsTpl"),
 		new(KeysI18n.Login, "登錄"),
@@ -35,7 +40,7 @@ public static class MsgZhCn {
 		new(KeysI18n.NotLogin, "尚未登錄"),
 		new(KeysI18n.PleaseRetryLater, "請稍後重試"),
 
-		// ── 錯誤文案（鍵直接引用 KeysErr，故錯誤鍵改名這裡會編譯錯）──
+		// ── 錯誤文案（鍵直接引用 KeysErr，故錯誤鍵改名這裏會編譯錯）──
 		new(KeysErr.Common.ArgErr__, "參數不合法：{0}"),
 		new(KeysErr.Common.UnknownErr, "伺服器暫時無法處理，請稍後重試"),
 		new(KeysErr.Common.NetWorkErr, "無法連線到伺服器，請檢查網路"),

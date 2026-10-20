@@ -1,0 +1,30 @@
+<Project>
+
+	<!-- 構建期生成語言包（每種語言一個 JSON），並複製到輸出目錄的 Languages\。
+		 用法：在需要的宿主 csproj 裡加一行
+		     <Import Project="..\..\LangPack.targets" />
+		 （路徑依專案位置調整），構建時就會：
+		 1. 跑 TswgCsTpl.LangPack：它做覆蓋率自檢（漏翻／空譯文就讓構建失敗），再把譯文導出成 JSON；
+		 2. 把 JSON 複製到 $(OutDir)Languages，也就是執行時 AppI18n 讀的位置。
+
+		 為何要做成構建期：譯文寫在 TswgCsTpl.I18nPack（不隨主程式發佈），
+		 主程式只載入當前語言的 JSON —— 沒用到的語言不佔體積、不佔內存。 -->
+	<PropertyGroup>
+		<LangPackProject>$(MSBuildThisFileDirectory)TswgCsTpl.LangPack\TswgCsTpl.LangPack.csproj</LangPackProject>
+		<LangPackOutDir>$(MSBuildThisFileDirectory)_gen\Languages\</LangPackOutDir>
+		<!-- 想暫時跳過生成（例如離線調試）就傳 -p:SkipLangPack=true。 -->
+		<SkipLangPack Condition="'$(SkipLangPack)' == ''">false</SkipLangPack>
+	</PropertyGroup>
+
+	<Target Name="MkLangPack" BeforeTargets="BeforeBuild" Condition="'$(SkipLangPack)' != 'true'">
+		<Exec Command="dotnet run --project &quot;$(LangPackProject)&quot; -c $(Configuration) -- &quot;$(LangPackOutDir)&quot;" />
+	</Target>
+
+	<Target Name="CopyLangPack" AfterTargets="Build" Condition="'$(SkipLangPack)' != 'true'">
+		<ItemGroup>
+			<LangPackJson Include="$(LangPackOutDir)*.json" />
+		</ItemGroup>
+		<Copy SourceFiles="@(LangPackJson)" DestinationFolder="$(OutDir)Languages" SkipUnchangedFiles="true" />
+	</Target>
+
+</Project>

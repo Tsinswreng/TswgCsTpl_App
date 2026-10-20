@@ -2,10 +2,8 @@ namespace TswgCsTpl.Ui.Client;
 
 using System.Net;
 using System.Text;
-using System.Text.Json;
 using Tsinswreng.CsCore;
 using Tsinswreng.CsErr;
-using Tsinswreng.CsErr.Results;
 using TswgCsTpl.Common;
 using TswgCsTpl.Infra.Json;
 using TswgCsTpl.Infra.Url;
@@ -63,19 +61,6 @@ public class HttpCaller : IHttpCaller {
 		return Req;
 	}
 
-	[Doc("把響應體解析成 `WebAns<T>`，錯誤包絡轉成 TypedErr 拋出。")]
-	static TResp? ReadAns<TResp>(str Json) where TResp : class {
-		// 1: 型別必須登記在 AppJsonCtx（AOT 下源生成器只認登記過的型別）。
-		var Ti = AppJsonCtx.Wire.GetTypeInfo(typeof(WebAns<TResp>))
-			?? throw new InvalidOperationException($"型別未登記於 AppJsonCtx：WebAns<{typeof(TResp).Name}>");
-		var Ans = (WebAns<TResp>?)JsonSerializer.Deserialize(Json, Ti);
-		// 2: 錯誤包絡 → 轉成業務異常，讓上層用 I18n 翻譯。
-		if (Ans?.Errors is not null && Ans.Errors.Count > 0) {
-			throw TypedErr.FromViews(Ans.Errors.Select(x => (ITypedErrView)x).ToList());
-		}
-		return Ans?.Data;
-	}
-
 	[Doc("把網絡層例外轉成業務錯誤，避免各處各自判斷 HttpRequestException。")]
 	static TypedErr MkNetErr(Exception Ex) {
 		// 底層例外無處可放（Exception.InnerException 只讀），故只回業務鍵；
@@ -89,16 +74,16 @@ public class HttpCaller : IHttpCaller {
 	{
 		try {
 			using var Msg = MkReq(HttpMethod.Post, Path, Token);
-			// 用源生成上下文序列化請求體；未登記的型別會在此拋出，而不是在 AOT 執行期神秘失敗。
+			// 請求體的序列化細節（源生成、型別登記）集中在 WireJson，這裡不碰 JSON。
 			Msg.Content = new StringContent(
-				JsonSerializer.Serialize(Req, typeof(TReq), AppJsonCtx.Wire.Options)
+				WireJson.Req(Req)
 				, Encoding.UTF8
 				, "application/json"
 			);
 			using var Resp = await Http.SendAsync(Msg, Ct);
 			var Body = await Resp.Content.ReadAsStringAsync(Ct);
 			if (Resp.StatusCode == HttpStatusCode.OK || (i32)Resp.StatusCode == 400) {
-				return ReadAns<TResp>(Body);
+				return WireJson.ReadAns<TResp>(Body);
 			}
 			throw MkNetErr(new HttpRequestException($"HTTP {(i32)Resp.StatusCode}"));
 		} catch (TypedErr) {
@@ -114,7 +99,7 @@ public class HttpCaller : IHttpCaller {
 			using var Resp = await Http.SendAsync(Msg, Ct);
 			var Body = await Resp.Content.ReadAsStringAsync(Ct);
 			if (Resp.StatusCode == HttpStatusCode.OK || (i32)Resp.StatusCode == 400) {
-				return ReadAns<TResp>(Body);
+				return WireJson.ReadAns<TResp>(Body);
 			}
 			throw MkNetErr(new HttpRequestException($"HTTP {(i32)Resp.StatusCode}"));
 		} catch (TypedErr) {
